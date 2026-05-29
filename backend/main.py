@@ -22,16 +22,10 @@ class GenReq(BaseModel):
     deep_topics: str = ""
     prefs: str = ""
     language: str = "English"
-    # BYOK: optional per-request overrides; blank -> fall back to backend/.env
+    # BYOK: optional per-request LLM overrides; blank -> fall back to backend/.env
     llm_api_key: str = ""
     llm_base_url: str = ""
     llm_model: str = ""
-    tts_provider: str = ""
-    search_provider: str = ""
-    extract_provider: str = ""
-    gradium_api_key: str = ""
-    tavily_api_key: str = ""
-    edge_voice: str = ""
 
 
 @app.post("/api/generate")

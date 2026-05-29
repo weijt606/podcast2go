@@ -7,9 +7,9 @@ from typing import Optional
 STEPS = [
     ("ingest", "解析来源 & 转写"),
     ("extract", "提取核心重点"),
-    ("research", "Tavily 深度搜索"),
+    ("research", "网络深度检索"),
     ("script", "撰写播客脚本"),
-    ("tts", "Gradium 语音合成"),
+    ("tts", "语音合成"),
 ]
 
 

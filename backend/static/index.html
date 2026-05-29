@@ -33,7 +33,7 @@
     </div>
   </header>
 
-  <!-- ===== BYOK SETTINGS ===== -->
+  <!-- ===== BYOK SETTINGS (LLM endpoint) ===== -->
   <details id="settings" class="mb-5 rounded-xl bg-surf p-4">
     <summary class="text-sm font-semibold cursor-pointer select-none" data-i18n="settings_summary"></summary>
     <div class="mt-3 space-y-3">
@@ -47,18 +47,8 @@
       </div>
       <div>
         <label class="setlbl" data-i18n="llm_model_label"></label>
-        <input id="s_llm_model" class="adv-input" placeholder="deepseek-ai/DeepSeek-V3" />
+        <input id="s_llm_model" class="adv-input" placeholder="gpt-4o-mini" />
       </div>
-      <div class="grid grid-cols-3 gap-2">
-        <div><label class="setlbl">TTS</label>
-          <select id="s_tts" class="adv-input"><option value="edge">edge</option><option value="gradium">gradium</option></select></div>
-        <div><label class="setlbl" data-i18n="search_label"></label>
-          <select id="s_search" class="adv-input"><option value="duckduckgo">ddg</option><option value="tavily">tavily</option></select></div>
-        <div><label class="setlbl" data-i18n="extract_label"></label>
-          <select id="s_extract" class="adv-input"><option value="trafilatura">trafil</option><option value="tavily">tavily</option></select></div>
-      </div>
-      <div id="row_gradium" class="hidden"><label class="setlbl">Gradium API Key</label><input id="s_gradium" type="password" class="adv-input" /></div>
-      <div id="row_tavily" class="hidden"><label class="setlbl">Tavily API Key</label><input id="s_tavily" type="password" class="adv-input" /></div>
       <p class="text-xs text-muted" data-i18n="settings_note"></p>
     </div>
   </details>
@@ -150,14 +140,13 @@
   const T = {
     en: {
       tagline: "Long content → a time-boxed key-point digest, listen on the go",
-      settings_summary: "⚙️ Engine settings · BYOK (stored locally)",
+      settings_summary: "⚙️ LLM endpoint · BYOK (stored locally)",
       llm_base_label: "LLM Base URL",
-      llm_base_ph: "https://api.studio.nebius.ai/v1 (or local http://localhost:11434/v1)",
+      llm_base_ph: "https://api.openai.com/v1 (or any OpenAI-compatible endpoint)",
       llm_key_label: "LLM API Key",
       llm_key_ph: "sk-… (use 'ollama' for local Ollama)",
       llm_model_label: "LLM Model",
-      search_label: "Search", extract_label: "Extract",
-      settings_note: "Blank fields fall back to the server .env. Keys live only in this browser's localStorage and are sent with each request.",
+      settings_note: "Any OpenAI-compatible endpoint (OpenAI, Groq, Together, OpenRouter, Nebius, local Ollama…). Blank fields fall back to the server .env. Keys live only in this browser and are sent with each request.",
       url_label: "Link (article / YouTube)",
       duration_label: "Target length",
       unit: "min",
@@ -187,14 +176,13 @@
     },
     zh: {
       tagline: "长内容 → 时长可控的重点播客，边走边听",
-      settings_summary: "⚙️ 引擎设置 · BYOK（仅存本地浏览器）",
+      settings_summary: "⚙️ LLM 端点 · BYOK（仅存本地浏览器）",
       llm_base_label: "LLM Base URL",
-      llm_base_ph: "https://api.studio.nebius.ai/v1（或本地 http://localhost:11434/v1）",
+      llm_base_ph: "https://api.openai.com/v1（任意 OpenAI 兼容端点）",
       llm_key_label: "LLM API Key",
       llm_key_ph: "sk-…（本地 Ollama 可填 ollama）",
       llm_model_label: "LLM Model",
-      search_label: "搜索", extract_label: "抽取",
-      settings_note: "留空则用服务器 .env 默认值。Key 仅存于本浏览器 localStorage，随请求发往你的后端。",
+      settings_note: "任意 OpenAI 兼容端点（OpenAI / Groq / Together / OpenRouter / Nebius / 本地 Ollama 等）。留空则用服务器 .env 默认值；Key 仅存于本浏览器，随请求发送。",
       url_label: "链接（文章 / YouTube）",
       duration_label: "目标时长",
       unit: "分",
@@ -260,21 +248,14 @@
   // ===================== BYOK settings =====================
   const SET_FIELDS = {
     s_llm_base:'llm_base_url', s_llm_key:'llm_api_key', s_llm_model:'llm_model',
-    s_tts:'tts_provider', s_search:'search_provider', s_extract:'extract_provider',
-    s_gradium:'gradium_api_key', s_tavily:'tavily_api_key',
   };
-  function toggleKeyRows(){
-    $('row_gradium').classList.toggle('hidden', $('s_tts').value !== 'gradium');
-    $('row_tavily').classList.toggle('hidden', !($('s_search').value === 'tavily' || $('s_extract').value === 'tavily'));
-  }
   function saveSettings(){
     const data = {}; Object.keys(SET_FIELDS).forEach(id => data[id] = $(id).value);
-    localStorage.setItem('p2g_settings', JSON.stringify(data)); toggleKeyRows();
+    localStorage.setItem('p2g_settings', JSON.stringify(data));
   }
   function loadSettings(){
     let data = {}; try { data = JSON.parse(localStorage.getItem('p2g_settings')||'{}'); } catch(e){}
     Object.keys(SET_FIELDS).forEach(id => { if (data[id] != null) $(id).value = data[id]; });
-    toggleKeyRows();
   }
   Object.keys(SET_FIELDS).forEach(id => $(id).addEventListener('change', saveSettings));
   function settingsPayload(){

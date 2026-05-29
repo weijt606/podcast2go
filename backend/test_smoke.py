@@ -2,9 +2,7 @@
 + live free-engine checks (no LLM, no paid keys)."""
 import asyncio
 import inspect
-import io
 import sys
-import wave
 
 from pipeline.extract import extract_key_points
 from pipeline.ingest import _AUDIO_EXT, _yt_id, ingest
@@ -13,13 +11,7 @@ from pipeline.research import deep_research
 from pipeline.script import build_script
 from providers.extract import extract_article
 from providers.search import web_search
-from providers.tts import (
-    EDGE_VOICES,
-    _concat_wav,
-    _split,
-    _wav_duration,
-    synthesize,
-)
+from providers.tts import EDGE_VOICES, synthesize
 from settings import resolve
 
 PASS, FAIL = [], []
@@ -31,10 +23,10 @@ def check(name, cond):
 
 
 # --- settings / BYOK resolution ---
-s = resolve({"llm_api_key": "k", "tts_provider": "gradium", "wpm": "200"})
-check("settings override wins", s.llm_api_key == "k" and s.tts_provider == "gradium" and s.wpm == 200)
+s = resolve({"llm_api_key": "k", "llm_model": "m", "wpm": "200"})
+check("settings override wins", s.llm_api_key == "k" and s.llm_model == "m" and s.wpm == 200)
 d = resolve({})
-check("settings default free", d.tts_provider == "edge" and d.search_provider == "duckduckgo" and d.extract_provider == "trafilatura")
+check("settings default from env", bool(d.llm_base_url) and d.wpm == 150)
 
 # --- BYOK contract: every stage takes Settings as first arg ---
 for fn in [extract_key_points, deep_research, ingest, build_script, synthesize, web_search, extract_article]:
@@ -54,22 +46,6 @@ check("yt id watch", _yt_id("https://www.youtube.com/watch?v=dQw4w9WgXcQ") == "d
 check("yt id none", _yt_id("https://example.com/x") is None)
 check("audio ext set", ".mp3" in _AUDIO_EXT)
 check("edge zh voice", EDGE_VOICES["中文"].startswith("zh-"))
-ch = _split("A" * 1700 + ". " + "B" * 1700 + ". " + "C" * 100)
-check("split respects limit", all(len(c) <= 1800 for c in ch))
-
-
-def _mkwav(sec, rate=8000):
-    b = io.BytesIO()
-    w = wave.open(b, "wb")
-    w.setnchannels(1)
-    w.setsampwidth(2)
-    w.setframerate(rate)
-    w.writeframes(b"\x00\x00" * int(rate * sec))
-    w.close()
-    return b.getvalue()
-
-
-check("wav concat duration", abs(_wav_duration(_concat_wav([_mkwav(1), _mkwav(2)])) - 3.0) < 0.05)
 
 
 # --- live free engines (network, but no keys) ---

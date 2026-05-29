@@ -15,30 +15,30 @@
 FastAPI (main.py) → settings.resolve(req) → pipeline/orchestrator.py 串联 5 阶段：
   1. ingest    文章=trafilatura / YouTube=字幕 / 音频=whisper STT
   2. extract   LLM map-reduce → 排序后的核心重点
-  3. research  深度搜索补充 top 重点（并发）
+  3. research  网络检索补充 top 重点（并发）
   4. script    LLM 按字数预算写定长口语脚本
-  5. tts       合成音频（edge=mp3 / gradium=wav）
+  5. tts       edge-tts 合成 mp3
 音频写入 static/audio/{job_id}.{ext}，由 /audio 提供。
 ```
 
-## 可插拔引擎（providers/）
+## 引擎（providers/）
 
-每个能力一个模块，按 `*_PROVIDER`（settings 解析后）分发。默认免费/开源：
+每个能力一个模块。随附的都是免费/开源、无需 key 的实现；要接付费 API（见下）只需在对应模块加分支。
 
-| 能力 | 默认 | 可选 | env |
-|---|---|---|---|
-| TTS | edge-tts | gradium | `TTS_PROVIDER` |
-| 搜索 | duckduckgo (ddgs) | tavily | `SEARCH_PROVIDER` |
-| 抽取 | trafilatura | tavily | `EXTRACT_PROVIDER` |
-| STT | faster-whisper（可选安装） | — | `STT_PROVIDER` |
-| LLM | 任意 OpenAI 兼容（Nebius / 本地 Ollama） | — | `NEBIUS_BASE_URL` |
+| 能力 | 随附实现 | 可自行接入 |
+|---|---|---|
+| LLM | 任意 OpenAI 兼容端点（`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL`） | OpenAI / Groq / Together / OpenRouter / Nebius / 本地 Ollama |
+| TTS | edge-tts（免费，多语言含中文） | OpenAI TTS / ElevenLabs / Azure / Piper(离线) |
+| 搜索 | DuckDuckGo (ddgs) | Tavily / Brave / Serper |
+| 抽取 | trafilatura | Tavily / Mercury / Readability |
+| STT | faster-whisper（可选安装，音频源用） | — |
 
 ## BYOK / 关键约束
 
-- **BYOK**：`settings.resolve(req)` 把请求里的 key/provider 覆盖叠加在 `.env` 默认值之上；
-  请求值优先，留空回退 `.env`。所有 pipeline / provider 函数的第一个参数都是 `Settings s`。
+- **BYOK**：`settings.resolve(req)` 把请求里的 LLM 端点/key/model 叠在 `.env` 默认值之上；
+  请求值优先，留空回退 `.env`。所有 pipeline / provider 函数第一个参数都是 `Settings s`。
 - 时长控制是确定性的：`目标词数 = 分钟 × WPM`（`settings.wpm`），由代码算好写进 prompt，不靠模型猜。
-- **语言**：edge-tts 支持中文及多语言；Gradium 仅英/法/德/西/葡。
+- **语言**：edge-tts 支持中文及多语言，源内容可任意语言。
 - 任务状态存在内存（`state.JOBS`），单进程单机运行。
 
 ## 运行命令
