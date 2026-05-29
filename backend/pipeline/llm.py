@@ -37,10 +37,19 @@ async def chat(s: Settings, system: str, user: str, json_mode: bool = True, temp
 
 
 def safe_json(s: str) -> dict:
-    s = s.strip()
-    s = re.sub(r"^```(?:json)?|```$", "", s, flags=re.MULTILINE).strip()
-    try:
-        return json.loads(s)
-    except Exception:
-        m = re.search(r"\{.*\}", s, re.DOTALL)
-        return json.loads(m.group(0)) if m else {}
+    """Best-effort JSON parse from model output. Never raises — returns {} on failure."""
+    if not s:
+        return {}
+    t = re.sub(r"^```(?:json)?|```$", "", s.strip(), flags=re.MULTILINE).strip()
+    candidates = [t]
+    m = re.search(r"\{.*\}", t, re.DOTALL)
+    if m:
+        candidates.append(m.group(0))
+    # tolerate trailing commas before } or ]
+    candidates += [re.sub(r",(\s*[}\]])", r"\1", c) for c in list(candidates)]
+    for c in candidates:
+        try:
+            return json.loads(c)
+        except Exception:
+            continue
+    return {}

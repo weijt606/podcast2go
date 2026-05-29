@@ -1,7 +1,9 @@
 """LLM: key points + research -> a time-budgeted spoken podcast script."""
+import re
+
 from settings import Settings
 
-from .llm import chat, safe_json
+from .llm import chat
 
 
 async def build_script(
@@ -27,12 +29,10 @@ async def build_script(
 
     system = (
         f"You are a podcast scriptwriter. Write a single-host spoken-word monologue in "
-        f"{language}. It will be read aloud by a TTS engine, so: no markdown, no headers, "
-        f"no bullet symbols, no stage directions, no emoji — only natural spoken sentences. "
+        f"{language}. Output ONLY the spoken text — no markdown, no headers, no bullet "
+        f"symbols, no stage directions, no emoji, and no preamble such as 'Here is'. "
         f"Open with a one-line hook, cover the key points in priority order weaving in the "
-        f"research naturally, and close with a short takeaway. "
-        f'Return JSON {{"script": "the full spoken text", '
-        f'"chapters": [{{"title": "short chapter title"}}]}}.'
+        f"research naturally, and close with a short takeaway."
     )
     user = (
         f'Title: "{title}"\n'
@@ -43,9 +43,10 @@ async def build_script(
         f"Key points (priority in parentheses):\n{kp}\n\n"
         f"Deep-dive research to weave in:\n{rs}"
     )
-    data = safe_json(await chat(s, system, user, temperature=0.6))
-    script = (data.get("script") or "").strip()
+    # free-form prose, not JSON — embedding a long script in JSON is fragile for local models
+    text = await chat(s, system, user, json_mode=False, temperature=0.6)
+    script = re.sub(r"^```.*?\n|```$", "", text.strip(), flags=re.DOTALL).strip()
     if not script:
         raise RuntimeError("脚本生成为空（检查 LLM model 是否有效）")
-    chapters = data.get("chapters") or [{"title": p["point"]} for p in key_points[:5]]
+    chapters = [{"title": p["point"]} for p in key_points[:5]]
     return {"script": script, "chapters": chapters}
