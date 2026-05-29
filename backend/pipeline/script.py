@@ -1,14 +1,11 @@
-"""Nebius LLM: key points + research -> a time-budgeted spoken podcast script."""
-from config import WPM
+"""LLM: key points + research -> a time-budgeted spoken podcast script."""
+from settings import Settings
 
 from .llm import chat, safe_json
 
 
-def word_budget(minutes: int) -> int:
-    return int(minutes * WPM)
-
-
 async def build_script(
+    s: Settings,
     title: str,
     summary: str,
     key_points: list[dict],
@@ -17,7 +14,7 @@ async def build_script(
     prefs: str = "",
     language: str = "English",
 ) -> dict:
-    budget = word_budget(minutes)
+    budget = int(minutes * s.wpm)
 
     kp = "\n".join(
         f"- ({p.get('importance', 3)}/5) {p['point']}: {p.get('detail', '')}"
@@ -41,14 +38,14 @@ async def build_script(
         f'Title: "{title}"\n'
         f"Overview: {summary}\n"
         f"Listener preference: {prefs or 'a general commuting audience'}\n"
-        f"TARGET LENGTH: about {budget} words (~{minutes} min at {WPM} wpm). "
+        f"TARGET LENGTH: about {budget} words (~{minutes} min at {s.wpm} wpm). "
         f"Stay within +/-10% of {budget} words.\n\n"
         f"Key points (priority in parentheses):\n{kp}\n\n"
         f"Deep-dive research to weave in:\n{rs}"
     )
-    data = safe_json(await chat(system, user, temperature=0.6))
+    data = safe_json(await chat(s, system, user, temperature=0.6))
     script = (data.get("script") or "").strip()
     if not script:
-        raise RuntimeError("脚本生成为空（检查 NEBIUS_MODEL 是否有效）")
+        raise RuntimeError("脚本生成为空（检查 LLM model 是否有效）")
     chapters = data.get("chapters") or [{"title": p["point"]} for p in key_points[:5]]
     return {"script": script, "chapters": chapters}

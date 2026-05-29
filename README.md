@@ -11,24 +11,34 @@ Long content (an hour-long podcast, a multi-thousand-word article) is hard to di
 
 ## How it works
 
-1. **Ingest** — articles via Tavily Extract; YouTube via captions
-2. **Extract** — an LLM on Nebius distills long text into ranked key points
-3. **Deep research** — Tavily searches the most important points for background and sources
+1. **Ingest** — articles (trafilatura), YouTube (captions), or audio/podcast URLs (Whisper STT)
+2. **Extract** — an LLM distills long text into ranked key points
+3. **Deep research** — searches the most important points for background and sources
 4. **Script** — a length-budgeted spoken script (`target minutes × words-per-minute`)
-5. **Synthesize** — Gradium TTS renders the audio; the UI supports lock-screen background playback
+5. **Synthesize** — TTS renders the audio; the UI supports lock-screen background playback
+
+## Pluggable engines
+
+Every engine is swappable via env vars. Defaults are **free / open-source**, so the
+only key you must provide is the LLM — paid tools are opt-in.
+
+| Capability | Free default | Opt-in alternative |
+|---|---|---|
+| TTS | `edge-tts` (free, multi-language incl. Chinese) | Gradium (`TTS_PROVIDER=gradium`) |
+| Web search | DuckDuckGo (`ddgs`) | Tavily (`SEARCH_PROVIDER=tavily`) |
+| Article extract | trafilatura | Tavily (`EXTRACT_PROVIDER=tavily`) |
+| STT (audio sources) | faster-whisper | — |
+| LLM | any OpenAI-compatible (Nebius, or local Ollama) | — |
 
 ## Tech stack
 
 - **Backend / pipeline**: Python + FastAPI (single service, no DB)
-- **LLM**: Nebius AI Studio (OpenAI-compatible)
-- **Search / extraction**: Tavily (Search + Extract)
-- **Text-to-speech**: Gradium TTS
 - **Frontend**: mobile single-page (Tailwind CDN + PWA), served directly by FastAPI
 
 ## Quick start
 
 ```bash
-cp .env.example backend/.env        # fill in NEBIUS / TAVILY / GRADIUM keys
+cp .env.example backend/.env        # set the LLM key (or point at local Ollama)
 cd backend
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -36,6 +46,14 @@ uvicorn main:app --reload --port 8000
 open http://localhost:8000
 ```
 
-> ⚠️ Gradium TTS currently supports English / French / German / Spanish / Portuguese — **not Chinese**. Source content can be in any language, but the generated audio defaults to English.
+> 💡 With the default engines you need no paid keys — only an LLM endpoint (Nebius, or a
+> local Ollama via `NEBIUS_BASE_URL=http://localhost:11434/v1`). Audio/podcast sources
+> additionally need `pip install faster-whisper`.
+
+## BYOK (bring your own key)
+
+Keys and engine choices can be set **per request** from the UI's ⚙️ settings panel
+(stored in your browser's localStorage, sent with each request) — or globally in
+`backend/.env`. Request values win; anything blank falls back to `.env`.
 
 See [CLAUDE.md](./CLAUDE.md) for build/run details and conventions.

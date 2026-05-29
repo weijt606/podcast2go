@@ -8,36 +8,51 @@
 
 ```
 前端 (static/index.html, Tailwind CDN, PWA)
-  │  POST /api/generate          → 创建任务，返回 job_id
+  │  POST /api/generate          → 创建任务，返回 job_id（可携带 BYOK 覆盖）
   │  GET  /api/events/{job_id}    → SSE 实时进度
   │  GET  /api/result/{job_id}    → 完成后取结果
   ▼
-FastAPI (main.py) → pipeline/orchestrator.py 串联 5 阶段：
-  1. ingest    文章=Tavily Extract / YouTube=youtube-transcript-api
-  2. extract   Nebius LLM map-reduce → 排序后的核心重点
-  3. research  Tavily 深度搜索补充 top 重点（并发）
-  4. script    Nebius LLM 按字数预算写定长口语脚本
-  5. tts       Gradium 合成 wav（长文分段后拼接）
-音频写入 static/audio/{job_id}.wav，由 /audio 提供。
+FastAPI (main.py) → settings.resolve(req) → pipeline/orchestrator.py 串联 5 阶段：
+  1. ingest    文章=trafilatura / YouTube=字幕 / 音频=whisper STT
+  2. extract   LLM map-reduce → 排序后的核心重点
+  3. research  深度搜索补充 top 重点（并发）
+  4. script    LLM 按字数预算写定长口语脚本
+  5. tts       合成音频（edge=mp3 / gradium=wav）
+音频写入 static/audio/{job_id}.{ext}，由 /audio 提供。
 ```
 
-## 关键约束
+## 可插拔引擎（providers/）
 
-- **Gradium TTS 仅支持英 / 法 / 德 / 西 / 葡，不支持中文。** 输出默认英文；源内容可为任意语言（LLM 读得懂）。
-- 时长控制是确定性的：`目标词数 = 分钟 × WPM`（见 `config.py`），由代码计算后写进脚本 prompt，不依赖模型猜测。
+每个能力一个模块，按 `*_PROVIDER`（settings 解析后）分发。默认免费/开源：
+
+| 能力 | 默认 | 可选 | env |
+|---|---|---|---|
+| TTS | edge-tts | gradium | `TTS_PROVIDER` |
+| 搜索 | duckduckgo (ddgs) | tavily | `SEARCH_PROVIDER` |
+| 抽取 | trafilatura | tavily | `EXTRACT_PROVIDER` |
+| STT | faster-whisper（可选安装） | — | `STT_PROVIDER` |
+| LLM | 任意 OpenAI 兼容（Nebius / 本地 Ollama） | — | `NEBIUS_BASE_URL` |
+
+## BYOK / 关键约束
+
+- **BYOK**：`settings.resolve(req)` 把请求里的 key/provider 覆盖叠加在 `.env` 默认值之上；
+  请求值优先，留空回退 `.env`。所有 pipeline / provider 函数的第一个参数都是 `Settings s`。
+- 时长控制是确定性的：`目标词数 = 分钟 × WPM`（`settings.wpm`），由代码算好写进 prompt，不靠模型猜。
+- **语言**：edge-tts 支持中文及多语言；Gradium 仅英/法/德/西/葡。
 - 任务状态存在内存（`state.JOBS`），单进程单机运行。
 
 ## 运行命令
 
 ```bash
-# 1. 配置密钥
-cp .env.example backend/.env   # 然后填入 NEBIUS / TAVILY / GRADIUM 三个 key
+# 1. 配置（默认免费引擎下，只需一个 LLM key，或指向本地 Ollama）
+cp .env.example backend/.env
 
 # 2. 安装依赖（需要 Python ≥ 3.10；本机用 python3.12）
 cd backend
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+# 音频/播客来源额外需要： pip install faster-whisper
 
 # 3. 启动（从 backend/ 目录运行，使其能加载 .env 并定位 static/）
 uvicorn main:app --reload --port 8000

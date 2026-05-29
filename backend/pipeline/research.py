@@ -1,20 +1,8 @@
-"""Tavily deep search to enrich the most important key points (concurrent)."""
+"""Deep-search the most important key points to enrich them (concurrent)."""
 import asyncio
 
-from tavily import TavilyClient
-
-from config import TAVILY_API_KEY
-
-_tv: TavilyClient | None = None
-
-
-def _tavily() -> TavilyClient:
-    global _tv
-    if _tv is None:
-        if not TAVILY_API_KEY:
-            raise RuntimeError("TAVILY_API_KEY 未设置（请在 backend/.env 配置）")
-        _tv = TavilyClient(api_key=TAVILY_API_KEY)
-    return _tv
+from providers.search import web_search
+from settings import Settings
 
 
 def _select(key_points: list[dict], deep_topics: str, top_n: int) -> list[dict]:
@@ -29,26 +17,14 @@ def _select(key_points: list[dict], deep_topics: str, top_n: int) -> list[dict]:
     return sorted(key_points, key=lambda p: -p.get("importance", 3))[:top_n]
 
 
-async def _search_one(point: dict) -> dict:
-    def go():
-        return _tavily().search(
-            query=point["point"], search_depth="advanced", max_results=3, include_answer=True
-        )
-
+async def _search_one(s: Settings, point: dict) -> dict:
     try:
-        res = await asyncio.to_thread(go)
+        res = await web_search(s, point["point"])
     except Exception as e:
         return {"point": point["point"], "answer": f"(搜索失败: {e})", "sources": []}
-    return {
-        "point": point["point"],
-        "answer": res.get("answer", "") or "",
-        "sources": [
-            {"title": r.get("title", ""), "url": r.get("url", "")}
-            for r in res.get("results", [])
-        ],
-    }
+    return {"point": point["point"], "answer": res.get("answer", ""), "sources": res.get("sources", [])}
 
 
-async def deep_research(key_points: list[dict], deep_topics: str = "", top_n: int = 3) -> list[dict]:
+async def deep_research(s: Settings, key_points: list[dict], deep_topics: str = "", top_n: int = 3) -> list[dict]:
     selected = _select(key_points, deep_topics, top_n)
-    return list(await asyncio.gather(*[_search_one(p) for p in selected]))
+    return list(await asyncio.gather(*[_search_one(s, p) for p in selected]))

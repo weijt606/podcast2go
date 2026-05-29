@@ -1,7 +1,19 @@
+# --- core ---
 fastapi
 uvicorn[standard]
 python-dotenv
 openai
-tavily-python
-gradium
+
+# --- default open-source / free engines ---
+edge-tts            # TTS (free, no key, multi-language incl. Chinese)
+mutagen             # read generated mp3 duration
+ddgs                # web search (DuckDuckGo, free)
+trafilatura         # article extraction (open-source)
 youtube-transcript-api==0.6.2
+
+# --- optional paid engines (only needed if selected via *_PROVIDER) ---
+gradium             # TTS_PROVIDER=gradium
+tavily-python       # SEARCH_PROVIDER=tavily / EXTRACT_PROVIDER=tavily
+
+# --- optional STT for audio/podcast sources (heavy; install when needed) ---
+# faster-whisper

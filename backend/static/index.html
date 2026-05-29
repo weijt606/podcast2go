@@ -20,6 +20,36 @@
     <p class="text-sm text-gray-400 mt-1">长内容 → 时长可控的重点播客，边走边听</p>
   </header>
 
+  <!-- ===== BYOK SETTINGS ===== -->
+  <details id="settings" class="mb-5 rounded-xl bg-gray-800/40 border border-gray-700 p-3">
+    <summary class="text-sm text-gray-200 cursor-pointer select-none">⚙️ 引擎设置 · BYOK（仅存本地浏览器）</summary>
+    <div class="mt-3 space-y-3">
+      <div>
+        <label class="setlbl">LLM Base URL</label>
+        <input id="s_llm_base" class="adv-input" placeholder="https://api.studio.nebius.ai/v1（或本地 http://localhost:11434/v1）" />
+      </div>
+      <div>
+        <label class="setlbl">LLM API Key</label>
+        <input id="s_llm_key" type="password" class="adv-input" placeholder="sk-…（本地 Ollama 可填 ollama）" />
+      </div>
+      <div>
+        <label class="setlbl">LLM Model</label>
+        <input id="s_llm_model" class="adv-input" placeholder="deepseek-ai/DeepSeek-V3" />
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <div><label class="setlbl">TTS</label>
+          <select id="s_tts" class="adv-input"><option value="edge">edge</option><option value="gradium">gradium</option></select></div>
+        <div><label class="setlbl">搜索</label>
+          <select id="s_search" class="adv-input"><option value="duckduckgo">ddg</option><option value="tavily">tavily</option></select></div>
+        <div><label class="setlbl">抽取</label>
+          <select id="s_extract" class="adv-input"><option value="trafilatura">trafil</option><option value="tavily">tavily</option></select></div>
+      </div>
+      <div id="row_gradium" class="hidden"><label class="setlbl">Gradium API Key</label><input id="s_gradium" type="password" class="adv-input" /></div>
+      <div id="row_tavily" class="hidden"><label class="setlbl">Tavily API Key</label><input id="s_tavily" type="password" class="adv-input" /></div>
+      <p class="text-xs text-gray-500">留空则用服务器 .env 默认值。Key 仅存于本浏览器 localStorage，随请求发往你的后端。</p>
+    </div>
+  </details>
+
   <!-- ===== 1. INPUT ===== -->
   <section id="screen-input">
     <label class="block text-sm text-gray-300 mb-1">链接（文章 / YouTube）</label>
@@ -50,9 +80,10 @@
           <input id="prefs" class="adv-input" placeholder="例: 对初学者友好，只讲结论" />
         </div>
         <div>
-          <label class="block text-xs text-gray-400 mb-1">输出语言（Gradium 不支持中文）</label>
+          <label class="block text-xs text-gray-400 mb-1">输出语言（取决于 TTS 引擎；默认 edge 引擎支持中文）</label>
           <select id="lang" class="adv-input">
-            <option>English</option><option>French</option><option>German</option>
+            <option>English</option><option>中文</option><option>Japanese</option>
+            <option>French</option><option>German</option>
             <option>Spanish</option><option>Portuguese</option>
           </select>
         </div>
@@ -108,6 +139,7 @@
     'm-btn rounded-xl bg-gray-800/70 border border-gray-700 py-2.5 text-sm');
   document.querySelectorAll('.adv-input').forEach(i => i.classList.add(
     'w-full','rounded-lg','bg-gray-800/70','border','border-gray-700','px-3','py-2','text-sm','focus:outline-none','focus:border-indigo-500'));
+  document.querySelectorAll('.setlbl').forEach(l => l.classList.add('block','text-xs','text-gray-400','mb-1'));
 
   let minutes = 5;
   const $ = id => document.getElementById(id);
@@ -120,6 +152,32 @@
     b.classList.toggle('!border-indigo-500', +b.dataset.m === minutes) ); }
   document.querySelectorAll('.m-btn').forEach(b => b.onclick = () => { minutes = +b.dataset.m; paintMinutes(); });
   paintMinutes();
+
+  // ---- BYOK settings: persist to localStorage, merge into each request ----
+  const SET_FIELDS = {
+    s_llm_base:'llm_base_url', s_llm_key:'llm_api_key', s_llm_model:'llm_model',
+    s_tts:'tts_provider', s_search:'search_provider', s_extract:'extract_provider',
+    s_gradium:'gradium_api_key', s_tavily:'tavily_api_key',
+  };
+  function toggleKeyRows(){
+    $('row_gradium').classList.toggle('hidden', $('s_tts').value !== 'gradium');
+    $('row_tavily').classList.toggle('hidden', !($('s_search').value === 'tavily' || $('s_extract').value === 'tavily'));
+  }
+  function saveSettings(){
+    const data = {}; Object.keys(SET_FIELDS).forEach(id => data[id] = $(id).value);
+    localStorage.setItem('p2g_settings', JSON.stringify(data)); toggleKeyRows();
+  }
+  function loadSettings(){
+    let data = {}; try { data = JSON.parse(localStorage.getItem('p2g_settings')||'{}'); } catch(e){}
+    Object.keys(SET_FIELDS).forEach(id => { if (data[id] != null) $(id).value = data[id]; });
+    toggleKeyRows();
+  }
+  Object.keys(SET_FIELDS).forEach(id => $(id).addEventListener('change', saveSettings));
+  loadSettings();
+  function settingsPayload(){
+    const p = {}; Object.entries(SET_FIELDS).forEach(([id,key]) => { const v=$(id).value.trim(); if (v) p[key]=v; });
+    return p;
+  }
 
   const STEP_LABELS = {ingest:'解析来源 & 转写', extract:'提取核心重点', research:'Tavily 深度搜索', script:'撰写播客脚本', tts:'Gradium 语音合成'};
   function renderSteps(states){
@@ -138,7 +196,7 @@
     const url = $('url').value.trim();
     $('input-err').classList.add('hidden');
     if (!/^https?:\/\//.test(url)) { $('input-err').textContent='请输入有效链接'; $('input-err').classList.remove('hidden'); return; }
-    const body = { url, minutes, focus:$('focus').value, deep_topics:$('deep').value, prefs:$('prefs').value, language:$('lang').value };
+    const body = { url, minutes, focus:$('focus').value, deep_topics:$('deep').value, prefs:$('prefs').value, language:$('lang').value, ...settingsPayload() };
     let res;
     try { res = await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()); }
     catch(e){ $('input-err').textContent='请求失败: '+e; $('input-err').classList.remove('hidden'); return; }
