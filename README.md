@@ -171,7 +171,8 @@ address in your browser.
 2. Pick a **target length** (3 / 5 / 10 / 15 min).
 3. *(optional)* Open **Advanced** for focus topics, tone/angle, or output language.
 4. Hit **Generate podcast** and watch the five steps run (parse → extract → research → script → voice).
-5. When the player appears, press play — or lock your phone and keep listening (background playback).
+5. When the player appears, press play — jump by chapter, skim the key points & sources, read the
+   full script, or **Download** the mp3 to keep. Lock your phone and it keeps playing (background playback).
 
 **4 · No `.env` key? Use the in-app panel.** Tap the settings panel at the top to paste an LLM
 Base URL / key / model for this browser only — handy on a phone. Blank fields fall back to
