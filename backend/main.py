@@ -26,6 +26,9 @@ class GenReq(BaseModel):
     deep_topics: str = ""
     prefs: str = ""
     language: str = "English"
+    mode: str = "single"          # "single" monologue | "dialogue" two-host
+    voice: str = ""               # edge voice for host/narrator
+    voice2: str = ""              # edge voice for the guest (dialogue mode)
     # BYOK: optional per-request overrides; blank -> fall back to backend/.env
     llm_api_key: str = ""
     llm_base_url: str = ""
@@ -69,16 +72,17 @@ class TTSTestReq(BaseModel):
     tts_api_key: str = ""
     tts_model: str = ""
     tts_voice: str = ""
+    voice: str = ""  # edge voice to preview (overrides the auto-by-language pick)
 
 
 @app.post("/api/test_tts")
 async def test_tts(req: TTSTestReq):
-    """Synthesize a short sample so the user can confirm the TTS engine works."""
+    """Synthesize a short sample so the user can confirm the engine / preview a voice."""
     s = settings.resolve(req.model_dump())
     sample = "你好，这是 podcast2go 的语音测试。" if (req.language or "").startswith(("中", "Chinese")) \
         else "Hello, this is a podcast2go voice test."
     try:
-        out = await synthesize(s, sample, req.language or "English")
+        out = await synthesize(s, sample, req.language or "English", req.voice)
         b64 = base64.b64encode(out["audio"]).decode()
         return {"ok": True, "detail": f"{out['duration']:.1f}s · {out['ext']}",
                 "sample": f"data:audio/{out['ext']};base64,{b64}"}

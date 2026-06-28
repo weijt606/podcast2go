@@ -4,7 +4,7 @@ import traceback
 
 from state import Job
 
-from providers.tts import synthesize
+from providers.tts import synthesize, synthesize_dialogue
 from settings import resolve
 
 from .extract import extract_key_points
@@ -37,16 +37,24 @@ async def run_pipeline(job: Job, req: dict):
         research = await deep_research(s, kps, req.get("deep_topics", ""))
         await _emit(job, "research", "done", f"{len(research)} 个主题已补充")
 
+        mode = req.get("mode", "single")
+        language = req.get("language", "English")
         await _emit(job, "script", "running", "撰写脚本中…")
         sc = await build_script(
             s, src["title"], ext.get("summary", ""), kps, research,
-            req["minutes"], req.get("prefs", ""), req.get("language", "English"),
+            req["minutes"], req.get("prefs", ""), language, mode,
         )
         script_text = sc["script"]
         await _emit(job, "script", "done", f"~{len(script_text.split())} 词")
 
-        await _emit(job, "tts", "running", "语音合成中…")
-        tts = await synthesize(s, script_text, req.get("language", "English"))
+        segments = sc.get("segments")
+        await _emit(job, "tts", "running", "对谈语音合成中…" if segments else "语音合成中…")
+        if segments:
+            tts = await synthesize_dialogue(
+                s, segments, language, req.get("voice", ""), req.get("voice2", ""),
+            )
+        else:
+            tts = await synthesize(s, script_text, language, req.get("voice", ""))
         os.makedirs(AUDIO_DIR, exist_ok=True)
         audio_path = f"{AUDIO_DIR}/{job.id}.{tts['ext']}"
         with open(audio_path, "wb") as f:

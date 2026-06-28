@@ -197,6 +197,28 @@
             <option>Spanish</option><option>Portuguese</option>
           </select>
         </div>
+        <div>
+          <label class="label" data-i18n="mode_label"></label>
+          <select id="mode" class="input">
+            <option value="single" data-i18n="mode_single"></option>
+            <option value="dialogue" data-i18n="mode_dialogue"></option>
+          </select>
+        </div>
+        <div>
+          <label class="label" data-i18n="voice_label"></label>
+          <div class="flex gap-2">
+            <select id="voice" class="input"></select>
+            <button id="prev_voice" type="button" class="btn px-3 py-2 shrink-0" data-i18n="preview_btn"></button>
+          </div>
+        </div>
+        <div id="guest_voice_wrap" class="hidden">
+          <label class="label" data-i18n="guest_voice_label"></label>
+          <div class="flex gap-2">
+            <select id="voice2" class="input"></select>
+            <button id="prev_voice2" type="button" class="btn px-3 py-2 shrink-0" data-i18n="preview_btn"></button>
+          </div>
+        </div>
+        <audio id="voice_preview" class="hidden"></audio>
       </div>
     </details>
 
@@ -286,6 +308,12 @@
       prefs_label: "Preference (tone / angle)",
       prefs_ph: "e.g. beginner-friendly, conclusions only",
       outlang_label: "Output language (depends on TTS engine; default edge supports Chinese)",
+      mode_label: "Mode",
+      mode_single: "Single host (narration)",
+      mode_dialogue: "Two-host dialogue",
+      voice_label: "Voice",
+      guest_voice_label: "Guest voice",
+      preview_btn: "▶ Preview",
       go: "Generate podcast",
       err_url: "Please enter a valid link",
       err_req: "Request failed: ",
@@ -337,6 +365,12 @@
       prefs_label: "偏好（语气 / 视角）",
       prefs_ph: "例: 对初学者友好，只讲结论",
       outlang_label: "输出语言（取决于 TTS 引擎；默认 edge 支持中文）",
+      mode_label: "模式",
+      mode_single: "单人讲解",
+      mode_dialogue: "双人对谈",
+      voice_label: "配音音色",
+      guest_voice_label: "嘉宾音色",
+      preview_btn: "▶ 试听",
       go: "生成播客",
       err_url: "请输入有效链接",
       err_req: "请求失败: ",
@@ -376,6 +410,45 @@
   function paintMinutes(){ document.querySelectorAll('.m-btn').forEach(b =>
     b.classList.toggle('active', +b.dataset.m === minutes)); }
   document.querySelectorAll('.m-btn').forEach(b => b.onclick = () => { minutes = +b.dataset.m; paintMinutes(); });
+
+  // ===================== voice & mode (output options) =====================
+  // curated edge-tts voices per output language; other languages auto-pick by language
+  const VOICES = {
+    "English": [
+      ["en-US-AvaNeural","Ava · F · natural"], ["en-US-AndrewNeural","Andrew · M · natural"],
+      ["en-US-EmmaNeural","Emma · F"], ["en-US-BrianNeural","Brian · M"],
+      ["en-US-AriaNeural","Aria · F"], ["en-US-GuyNeural","Guy · M"],
+    ],
+    "中文": [
+      ["zh-CN-XiaoxiaoNeural","晓晓 · 女 · 温暖"], ["zh-CN-XiaoyiNeural","晓伊 · 女 · 活泼"],
+      ["zh-CN-YunxiNeural","云希 · 男 · 阳光"], ["zh-CN-YunyangNeural","云扬 · 男 · 沉稳"],
+      ["zh-CN-YunjianNeural","云健 · 男 · 浑厚"],
+    ],
+  };
+  function voiceList(){ return VOICES[$('lang').value] || [["","Auto"]]; }
+  function fillVoice(sel, defIdx){
+    const cur = sel.value, list = voiceList();
+    sel.innerHTML = list.map(([v,n]) => `<option value="${v}">${n}</option>`).join('');
+    if (list.some(([v]) => v === cur)) sel.value = cur;
+    else if (list[defIdx]) sel.value = list[defIdx][0];
+  }
+  function paintVoices(){ fillVoice($('voice'), 0); fillVoice($('voice2'), Math.min(1, voiceList().length - 1)); }
+  function paintMode(){ $('guest_voice_wrap').classList.toggle('hidden', $('mode').value !== 'dialogue'); }
+  $('lang').addEventListener('change', paintVoices);
+  $('mode').addEventListener('change', paintMode);
+
+  async function previewVoice(voiceVal, btn){
+    if (!voiceVal) return;
+    const old = btn.textContent; btn.disabled = true; btn.textContent = L.testing;
+    try {
+      const r = await fetch('/api/test_tts', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ language:$('lang').value, tts_engine:'edge', voice:voiceVal })}).then(r=>r.json());
+      if (r.ok && r.sample){ const au=$('voice_preview'); au.src=r.sample; au.play().catch(()=>{}); }
+    } catch(e){}
+    finally { btn.disabled = false; btn.textContent = old; }
+  }
+  $('prev_voice').onclick = (e) => previewVoice($('voice').value, e.currentTarget);
+  $('prev_voice2').onclick = (e) => previewVoice($('voice2').value, e.currentTarget);
 
   // ===================== BYOK settings =====================
   const SET_FIELDS = {
@@ -455,7 +528,8 @@
     const url = $('url').value.trim();
     $('input-err').classList.add('hidden');
     if (!/^https?:\/\//.test(url)) { $('input-err').textContent=L.err_url; $('input-err').classList.remove('hidden'); return; }
-    const body = { url, minutes, focus:$('focus').value, deep_topics:$('deep').value, prefs:$('prefs').value, language:$('lang').value, ...settingsPayload() };
+    const body = { url, minutes, focus:$('focus').value, deep_topics:$('deep').value, prefs:$('prefs').value,
+      language:$('lang').value, mode:$('mode').value, voice:$('voice').value, voice2:$('voice2').value, ...settingsPayload() };
     let res;
     try { res = await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()); }
     catch(e){ $('input-err').textContent=L.err_req+e; $('input-err').classList.remove('hidden'); return; }
@@ -520,6 +594,8 @@
   paintTtsEngine();
   applyLang(lang);
   paintMinutes();
+  paintVoices();
+  paintMode();
 </script>
 </body>
 </html>
