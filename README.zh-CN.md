@@ -1,5 +1,7 @@
 # 🎧 podcast2go
 
+![podcast2go —— 黑白四格漫画：通勤者被一小时长视频和看不完的长文困住，贴上链接、设定 5 分钟时长，一台憨态可掬的机器把长内容浓缩成一段短音频，最后戴上耳机边走边听](./podcast2go-banner-cn.png)
+
 [![简体中文](https://img.shields.io/badge/README-简体中文-15803d?style=flat-square)](README.zh-CN.md)
 [![English](https://img.shields.io/badge/README-English-1f6feb?style=flat-square)](README.md)
 [![Python](https://img.shields.io/badge/Python-3.10+-111111?style=flat-square)](https://www.python.org/)

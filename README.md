@@ -1,5 +1,7 @@
 # 🎧 podcast2go
 
+![podcast2go — a four-panel black-and-white comic: a commuter overwhelmed by a 1-hour video and an endless article, pastes the link and picks a 5-min length, a friendly machine turns the long pile into a short audio digest, then they walk off listening on earbuds](./podcast2go-banner-en.png)
+
 [![English](https://img.shields.io/badge/README-English-15803d?style=flat-square)](README.md)
 [![简体中文](https://img.shields.io/badge/README-简体中文-1f6feb?style=flat-square)](README.zh-CN.md)
 [![Python](https://img.shields.io/badge/Python-3.10+-111111?style=flat-square)](https://www.python.org/)
