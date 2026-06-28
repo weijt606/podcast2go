@@ -5,61 +5,126 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>podcast2go</title>
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#121212" />
+  <meta name="theme-color" content="#a9d877" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { colors: {
-      base:'#121212', surf:'#181818', surf2:'#282828', field:'#3e3e3e',
-      sgreen:'#1DB954', sgreenL:'#1ED760', muted:'#b3b3b3'
-    }, fontFamily: { sans:['Circular','Helvetica Neue','Arial','sans-serif'] } } } };
+    tailwind.config = { theme: { extend: {
+      colors: {
+        ink:'#141111', canvas:'#fffaef', warm1:'#fff8e6', warm2:'#fffdf7', mute:'#576574',
+        acc:'#a9d877', accD:'#8fc659', pink:'#fe7da8', cyan:'#27ccf3', lav:'#bbafe6', orange:'#f8a16f', lime:'#a9d877'
+      },
+      fontFamily: {
+        display:['"Space Grotesk"','system-ui','sans-serif'],
+        mono:['"Space Mono"','ui-monospace','monospace'],
+        body:['ui-sans-serif','system-ui','sans-serif']
+      },
+      boxShadow: {
+        bxs:'1px 1px 0 #141111', bsm:'2px 2px 0 #141111', bmd:'4px 4px 0 #141111', blg:'6px 6px 0 #141111'
+      }
+    } } };
   </script>
   <style>
-    body { background:#121212; color:#fff; -webkit-tap-highlight-color:transparent; }
-    .step-dot { transition: all .3s; }
-    .hero { background:linear-gradient(180deg,#1f1f1f 0%,#121212 100%); }
+    *,*::before,*::after{ box-sizing:border-box; margin:0; border-radius:0 }
+    body{ background:#fffaef; color:#141111; -webkit-tap-highlight-color:transparent;
+          -webkit-font-smoothing:antialiased; line-height:1.5 }
+    ::selection{ background:#a9d877; color:#141111 }
+    ::-webkit-scrollbar{ width:10px; height:10px }
+    ::-webkit-scrollbar-track{ background:#fffaef }
+    ::-webkit-scrollbar-thumb{ background:#141111 }
+    :focus-visible{ outline:2px solid #141111; outline-offset:2px }
+    a{ color:#141111; text-underline-offset:2px }
+    summary{ list-style:none; cursor:pointer }
+    summary::-webkit-details-marker{ display:none }
+    @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation:none!important; transition:none!important } }
+    @keyframes float{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+    /* ---- raft component primitives ---- */
+    .card{ background:#fffdf7; border:2px solid #141111; box-shadow:2px 2px 0 #141111 }
+    .label{ display:block; font-family:"Space Mono",monospace; font-size:10px; font-weight:700;
+            letter-spacing:.08em; text-transform:uppercase; color:#141111; margin-bottom:6px }
+    .input{ width:100%; background:#fff; border:2px solid #141111; padding:10px 12px;
+            font-size:14px; font-family:inherit; color:#141111 }
+    .input::placeholder{ color:#576574 }
+    .input:focus{ outline:2px solid #141111; outline-offset:2px }
+    .summary{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:14px; user-select:none }
+    .btn{ font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:14px; border:2px solid #141111;
+          box-shadow:2px 2px 0 #141111; background:#fff; color:#141111; cursor:pointer;
+          transition:transform .1s cubic-bezier(.4,0,.2,1),box-shadow .1s cubic-bezier(.4,0,.2,1) }
+    .btn:hover{ transform:translate(2px,2px); box-shadow:1px 1px 0 #141111 }
+    .btn:active{ transform:translate(2px,2px); box-shadow:none }
+    .btn:disabled{ opacity:.5; box-shadow:none; cursor:not-allowed; transform:none }
+    .btn-primary{ background:#a9d877 }
+    .m-btn{ font-family:"Space Mono",monospace; font-weight:700; font-size:14px; border:2px solid #141111;
+            box-shadow:2px 2px 0 #141111; background:#fff; color:#141111; padding:10px 0; cursor:pointer;
+            transition:transform .1s cubic-bezier(.4,0,.2,1),box-shadow .1s cubic-bezier(.4,0,.2,1) }
+    .m-btn:hover{ transform:translate(2px,2px); box-shadow:1px 1px 0 #141111 }
+    .m-btn.active{ background:#a9d877 }
+    .lang-btn{ font-family:"Space Mono",monospace; font-weight:700; font-size:12px; padding:6px 12px;
+               background:#fff; color:#141111; cursor:pointer }
+    .lang-btn + .lang-btn{ border-left:2px solid #141111 }
+    .lang-btn.active{ background:#a9d877 }
+    .mark{ width:42px; height:42px; flex:0 0 42px; background:#a9d877; border:2px solid #141111;
+           box-shadow:2px 2px 0 #141111; display:inline-flex; align-items:center; justify-content:center }
+    .errbox{ background:#fe7da8; border:2px solid #141111; box-shadow:2px 2px 0 #141111;
+             padding:8px 12px; font-size:14px; font-weight:600 }
+    .mono-link{ font-family:"Space Mono",monospace; font-size:12px; text-transform:uppercase;
+                letter-spacing:.06em; text-decoration:underline; color:#141111; cursor:pointer; background:none; border:none }
+    .hero-art{ width:88px; height:88px; flex:0 0 88px; background:#a9d877; border:2px solid #141111;
+               box-shadow:4px 4px 0 #141111; display:flex; align-items:center; justify-content:center;
+               animation:float 5s cubic-bezier(.4,0,.2,1) infinite }
+    audio{ width:100%; border:2px solid #141111; box-shadow:2px 2px 0 #141111 }
   </style>
 </head>
-<body class="min-h-screen font-sans">
+<body class="min-h-screen font-body">
 <div class="max-w-md mx-auto px-5 pt-7 pb-28">
 
-  <header class="mb-6 flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-extrabold tracking-tight">🎧 podcast2go</h1>
-      <p class="text-sm text-muted mt-1" data-i18n="tagline"></p>
+  <header class="mb-6 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3 min-w-0">
+      <span class="mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#141111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 13v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="12" width="4" height="6"/><rect x="17" y="12" width="4" height="6"/>
+        </svg>
+      </span>
+      <div class="min-w-0">
+        <h1 class="font-display text-2xl font-bold tracking-tight leading-none">podcast2go</h1>
+        <p class="text-xs text-mute mt-1.5 truncate" data-i18n="tagline"></p>
+      </div>
     </div>
-    <div id="langtoggle" class="flex rounded-full overflow-hidden bg-surf2 text-xs font-bold shrink-0">
-      <button data-lang="en" class="lang-btn px-3 py-1.5 rounded-full">EN</button>
-      <button data-lang="zh" class="lang-btn px-3 py-1.5 rounded-full">中文</button>
+    <div id="langtoggle" class="flex border-2 border-ink shadow-bsm shrink-0">
+      <button data-lang="en" class="lang-btn">EN</button>
+      <button data-lang="zh" class="lang-btn">中文</button>
     </div>
   </header>
 
   <!-- ===== BYOK SETTINGS (LLM endpoint) ===== -->
-  <details id="settings" class="mb-5 rounded-xl bg-surf p-4">
-    <summary class="text-sm font-semibold cursor-pointer select-none" data-i18n="settings_summary"></summary>
-    <div class="mt-3 space-y-3">
+  <details id="settings" class="mb-5 card p-4">
+    <summary class="summary" data-i18n="settings_summary"></summary>
+    <div class="mt-4 space-y-3">
       <div>
-        <label class="setlbl" data-i18n="llm_base_label"></label>
-        <input id="s_llm_base" class="adv-input" data-ph="llm_base_ph" />
+        <label class="label" data-i18n="llm_base_label"></label>
+        <input id="s_llm_base" class="input" data-ph="llm_base_ph" />
       </div>
       <div>
-        <label class="setlbl" data-i18n="llm_key_label"></label>
-        <input id="s_llm_key" type="password" class="adv-input" data-ph="llm_key_ph" />
+        <label class="label" data-i18n="llm_key_label"></label>
+        <input id="s_llm_key" type="password" class="input" data-ph="llm_key_ph" />
       </div>
       <div>
-        <label class="setlbl" data-i18n="llm_model_label"></label>
-        <input id="s_llm_model" class="adv-input" placeholder="gpt-4o-mini" />
+        <label class="label" data-i18n="llm_model_label"></label>
+        <input id="s_llm_model" class="input" placeholder="gpt-4o-mini" />
       </div>
-      <p class="text-xs text-muted" data-i18n="settings_note"></p>
+      <p class="text-xs text-mute" data-i18n="settings_note"></p>
     </div>
   </details>
 
   <!-- ===== 1. INPUT ===== -->
   <section id="screen-input">
-    <label class="block text-sm font-semibold mb-2" data-i18n="url_label"></label>
-    <input id="url" type="url" inputmode="url" placeholder="https://…"
-      class="w-full rounded-lg bg-field/60 px-4 py-3 text-sm placeholder-muted focus:outline-none focus:ring-2 focus:ring-white" />
+    <label class="label" data-i18n="url_label"></label>
+    <input id="url" type="url" inputmode="url" placeholder="https://…" class="input" />
 
-    <label class="block text-sm font-semibold mt-6 mb-2" data-i18n="duration_label"></label>
+    <label class="label mt-6" data-i18n="duration_label"></label>
     <div id="minutes" class="grid grid-cols-4 gap-2">
       <button data-m="3" class="m-btn"></button>
       <button data-m="5" class="m-btn"></button>
@@ -67,24 +132,24 @@
       <button data-m="15" class="m-btn"></button>
     </div>
 
-    <details class="mt-5 group">
-      <summary class="text-sm font-semibold text-muted cursor-pointer select-none" data-i18n="advanced"></summary>
-      <div class="mt-3 space-y-3">
+    <details class="mt-5 card p-4">
+      <summary class="summary text-mute" data-i18n="advanced"></summary>
+      <div class="mt-4 space-y-3">
         <div>
-          <label class="setlbl" data-i18n="focus_label"></label>
-          <input id="focus" class="adv-input" data-ph="focus_ph" />
+          <label class="label" data-i18n="focus_label"></label>
+          <input id="focus" class="input" data-ph="focus_ph" />
         </div>
         <div>
-          <label class="setlbl" data-i18n="deep_label"></label>
-          <input id="deep" class="adv-input" data-ph="deep_ph" />
+          <label class="label" data-i18n="deep_label"></label>
+          <input id="deep" class="input" data-ph="deep_ph" />
         </div>
         <div>
-          <label class="setlbl" data-i18n="prefs_label"></label>
-          <input id="prefs" class="adv-input" data-ph="prefs_ph" />
+          <label class="label" data-i18n="prefs_label"></label>
+          <input id="prefs" class="input" data-ph="prefs_ph" />
         </div>
         <div>
-          <label class="setlbl" data-i18n="outlang_label"></label>
-          <select id="lang" class="adv-input">
+          <label class="label" data-i18n="outlang_label"></label>
+          <select id="lang" class="input">
             <option>English</option><option>中文</option><option>Japanese</option>
             <option>French</option><option>German</option>
             <option>Spanish</option><option>Portuguese</option>
@@ -93,44 +158,51 @@
       </div>
     </details>
 
-    <button id="go" class="mt-7 w-full rounded-full bg-sgreen text-black py-3.5 font-bold hover:bg-sgreenL hover:scale-[1.02] active:scale-100 transition disabled:opacity-40" data-i18n="go"></button>
-    <p id="input-err" class="text-rose-400 text-sm mt-3 hidden"></p>
+    <button id="go" class="btn btn-primary w-full mt-7 py-3.5" data-i18n="go"></button>
+    <p id="input-err" class="errbox mt-4 hidden"></p>
   </section>
 
   <!-- ===== 2. PROGRESS ===== -->
   <section id="screen-progress" class="hidden">
-    <h2 class="text-xl font-extrabold mb-5" data-i18n="progress_title"></h2>
+    <h2 class="font-display text-xl font-bold mb-5" data-i18n="progress_title"></h2>
     <ul id="steps" class="space-y-3"></ul>
-    <p id="prog-err" class="text-rose-400 text-sm mt-4 hidden"></p>
-    <button onclick="reset()" class="mt-6 text-sm text-muted underline" data-i18n="cancel"></button>
+    <p id="prog-err" class="errbox mt-4 hidden"></p>
+    <button onclick="reset()" class="mono-link mt-6 inline-block" data-i18n="cancel"></button>
   </section>
 
   <!-- ===== 3. PLAYER ===== -->
   <section id="screen-player" class="hidden">
-    <div class="hero -mx-5 px-5 pt-2 pb-6 mb-5 rounded-b-2xl">
-      <div class="w-full aspect-square max-w-[200px] mx-auto rounded-xl bg-gradient-to-br from-sgreen to-emerald-800 flex items-center justify-center text-6xl shadow-2xl mb-4">🎧</div>
-      <h2 id="p-title" class="text-xl font-extrabold leading-snug"></h2>
-      <p id="p-meta" class="text-xs text-muted mt-1"></p>
+    <div class="flex items-start gap-4 mb-5">
+      <div class="hero-art" aria-hidden="true">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#141111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 13v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="12" width="4" height="6"/><rect x="17" y="12" width="4" height="6"/>
+        </svg>
+      </div>
+      <div class="min-w-0 pt-1">
+        <span class="inline-flex border-2 border-ink shadow-bxs bg-acc px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider">Podcast</span>
+        <h2 id="p-title" class="font-display text-lg font-bold leading-snug mt-2 break-words"></h2>
+        <p id="p-meta" class="font-mono text-xs text-mute mt-1"></p>
+      </div>
     </div>
 
-    <audio id="audio" controls preload="auto" class="w-full mb-5"></audio>
+    <audio id="audio" controls preload="auto" class="mb-5"></audio>
 
-    <div id="chapters" class="space-y-1 mb-6"></div>
+    <div id="chapters" class="mb-6"></div>
 
-    <h3 class="text-base font-bold mb-3" data-i18n="points_h"></h3>
-    <div id="points" class="space-y-2 mb-6"></div>
+    <h3 class="font-display text-base font-bold mb-3" data-i18n="points_h"></h3>
+    <div id="points" class="mb-6"></div>
 
-    <h3 class="text-base font-bold mb-3" data-i18n="sources_h"></h3>
-    <div id="sources" class="space-y-2 mb-6"></div>
+    <h3 class="font-display text-base font-bold mb-3" data-i18n="sources_h"></h3>
+    <div id="sources" class="mb-6"></div>
 
-    <details class="mb-6">
-      <summary class="text-sm font-semibold text-muted cursor-pointer" data-i18n="script_summary"></summary>
-      <p id="script" class="text-sm text-muted mt-2 whitespace-pre-wrap leading-relaxed"></p>
+    <details class="mb-6 card p-4">
+      <summary class="summary text-mute" data-i18n="script_summary"></summary>
+      <p id="script" class="text-sm text-mute mt-3 whitespace-pre-wrap leading-relaxed"></p>
     </details>
 
     <div class="flex gap-3">
-      <a id="download" download class="flex-1 text-center rounded-full bg-surf2 hover:bg-field py-3 text-sm font-semibold transition" data-i18n="download"></a>
-      <button onclick="reset()" class="flex-1 rounded-full bg-sgreen text-black py-3 text-sm font-bold hover:bg-sgreenL transition" data-i18n="again"></button>
+      <a id="download" download class="btn flex-1 text-center py-3" data-i18n="download"></a>
+      <button onclick="reset()" class="btn btn-primary flex-1 py-3" data-i18n="again"></button>
     </div>
   </section>
 </div>
@@ -140,7 +212,7 @@
   const T = {
     en: {
       tagline: "Long content → a time-boxed key-point digest, listen on the go",
-      settings_summary: "⚙️ LLM endpoint · BYOK (stored locally)",
+      settings_summary: "LLM endpoint · BYOK (stored locally) ▾",
       llm_base_label: "LLM Base URL",
       llm_base_ph: "https://api.openai.com/v1 (or any OpenAI-compatible endpoint)",
       llm_key_label: "LLM API Key",
@@ -166,6 +238,7 @@
       err_done: "Generation failed: ",
       err_conn: "Connection lost",
       steps: { ingest:"Parse & transcribe", extract:"Extract key points", research:"Deep search", script:"Write script", tts:"Synthesize voice" },
+      st: { done:"Done", running:"Running", pending:"Waiting" },
       points_h: "Key points",
       sources_h: "Sources & deep dive",
       none: "None",
@@ -176,7 +249,7 @@
     },
     zh: {
       tagline: "长内容 → 时长可控的重点播客，边走边听",
-      settings_summary: "⚙️ LLM 端点 · BYOK（仅存本地浏览器）",
+      settings_summary: "LLM 端点 · BYOK（仅存本地浏览器） ▾",
       llm_base_label: "LLM Base URL",
       llm_base_ph: "https://api.openai.com/v1（任意 OpenAI 兼容端点）",
       llm_key_label: "LLM API Key",
@@ -202,6 +275,7 @@
       err_done: "生成失败: ",
       err_conn: "连接中断",
       steps: { ingest:"解析来源 & 转写", extract:"提取核心重点", research:"深度搜索", script:"撰写播客脚本", tts:"语音合成" },
+      st: { done:"完成", running:"进行中", pending:"等待" },
       points_h: "核心重点",
       sources_h: "来源 & 深度补充",
       none: "无",
@@ -223,26 +297,14 @@
     document.querySelectorAll('[data-i18n]').forEach(el => { const v = L[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
     document.querySelectorAll('[data-ph]').forEach(el => { const v = L[el.dataset.ph]; if (typeof v === 'string') el.placeholder = v; });
     document.querySelectorAll('.m-btn').forEach(b => b.textContent = `${b.dataset.m} ${L.unit}`);
-    document.querySelectorAll('.lang-btn').forEach(b => {
-      const on = b.dataset.lang === lang;
-      b.classList.toggle('bg-sgreen', on); b.classList.toggle('text-black', on); b.classList.toggle('text-muted', !on);
-    });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
   }
   document.querySelectorAll('.lang-btn').forEach(b => b.onclick = () => applyLang(b.dataset.lang));
 
-  // ===================== styling shortcuts =====================
-  document.querySelectorAll('.m-btn').forEach(b => b.className =
-    'm-btn rounded-full bg-surf2 py-2.5 text-sm font-semibold hover:bg-field transition');
-  document.querySelectorAll('.adv-input').forEach(i => i.classList.add(
-    'w-full','rounded-lg','bg-field/60','px-3','py-2','text-sm','placeholder-muted','focus:outline-none','focus:ring-2','focus:ring-white'));
-  document.querySelectorAll('.setlbl').forEach(l => l.classList.add('block','text-xs','text-muted','mb-1'));
-
   // ===================== minute selector =====================
   let minutes = 5;
-  function paintMinutes(){ document.querySelectorAll('.m-btn').forEach(b => {
-    const on = +b.dataset.m === minutes;
-    b.classList.toggle('!bg-sgreen', on); b.classList.toggle('!text-black', on);
-  }); }
+  function paintMinutes(){ document.querySelectorAll('.m-btn').forEach(b =>
+    b.classList.toggle('active', +b.dataset.m === minutes)); }
   document.querySelectorAll('.m-btn').forEach(b => b.onclick = () => { minutes = +b.dataset.m; paintMinutes(); });
 
   // ===================== BYOK settings =====================
@@ -269,14 +331,21 @@
   function reset(){ if (window._es) window._es.close(); $('audio').pause(); show('input'); }
 
   function renderSteps(states){
+    const M = { done:['bg-acc','✓'], running:['bg-cyan animate-pulse','◌'], pending:['bg-white','○'] };
     $('steps').innerHTML = Object.keys(L.steps).map(k => {
       const st = states[k] || {status:'pending'};
-      const icon = st.status==='done' ? '✓' : st.status==='running' ? '◌' : '○';
-      const color = st.status==='done' ? 'text-sgreen' : st.status==='running' ? 'text-sgreenL animate-pulse' : 'text-gray-600';
+      const status = M[st.status] ? st.status : 'pending';
+      const m = M[status];
+      const txt = status==='pending' ? 'text-mute' : 'text-ink';
+      const badge = `<span class="shrink-0 inline-flex items-center border-2 border-ink shadow-bxs ${m[0]} px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider leading-none">${L.st[status]}</span>`;
       return `<li class="flex items-start gap-3">
-        <span class="step-dot ${color} text-lg leading-none mt-0.5">${icon}</span>
-        <div><div class="text-sm ${st.status==='pending'?'text-gray-600':'text-white'}">${L.steps[k]}</div>
-        ${st.detail?`<div class="text-xs text-muted">${st.detail}</div>`:''}</div></li>`;
+        <span class="step-dot inline-flex items-center justify-center w-6 h-6 shrink-0 border-2 border-ink shadow-bxs font-mono text-xs ${m[0]}">${m[1]}</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold ${txt}">${L.steps[k]}</span>
+            ${badge}
+          </div>
+        ${st.detail?`<div class="font-mono text-[11px] text-mute mt-0.5">${st.detail}</div>`:''}</div></li>`;
     }).join('');
   }
 
@@ -313,18 +382,18 @@
     $('download').href = d.audio_url;
 
     $('chapters').innerHTML = (d.chapters||[]).map(c =>
-      `<button class="w-full text-left text-sm px-3 py-2.5 rounded-lg bg-surf hover:bg-surf2 transition" onclick="document.getElementById('audio').currentTime=${c.start};document.getElementById('audio').play()">
-        <span class="text-sgreen tabular-nums mr-2 font-semibold">${fmt(c.start)}</span>${c.title}</button>`).join('');
+      `<button class="w-full text-left text-sm px-3 py-2.5 border-2 border-ink bg-warm2 shadow-bxs mb-2 hover:bg-warm1 transition" onclick="document.getElementById('audio').currentTime=${c.start};document.getElementById('audio').play()">
+        <span class="font-mono text-[11px] font-bold bg-acc border-2 border-ink px-1.5 py-0.5 mr-2">${fmt(c.start)}</span>${c.title}</button>`).join('');
 
     $('points').innerHTML = (d.key_points||[]).map(p =>
-      `<div class="rounded-lg bg-surf px-3 py-2.5 text-sm">
-        <span class="text-sgreen mr-1">●</span>${p.point}
-        ${p.detail?`<div class="text-xs text-muted mt-0.5">${p.detail}</div>`:''}</div>`).join('');
+      `<div class="border-2 border-ink bg-warm2 shadow-bxs px-3 py-2.5 text-sm mb-2">
+        <span class="inline-block w-2 h-2 bg-acc border border-ink mr-2 align-middle"></span>${p.point}
+        ${p.detail?`<div class="font-mono text-[11px] text-mute mt-1">${p.detail}</div>`:''}</div>`).join('');
 
     const srcRows = [];
     (d.research||[]).forEach(r => (r.sources||[]).forEach(s =>
-      srcRows.push(`<a href="${s.url}" target="_blank" class="block text-sm text-sgreen truncate hover:underline">${s.title||s.url}</a>`)));
-    $('sources').innerHTML = srcRows.length ? srcRows.join('') : `<p class="text-xs text-muted">${L.none}</p>`;
+      srcRows.push(`<a href="${s.url}" target="_blank" class="block text-sm border-2 border-ink bg-warm2 shadow-bxs px-3 py-2 mb-2 truncate hover:bg-warm1 transition">${s.title||s.url}</a>`)));
+    $('sources').innerHTML = srcRows.length ? srcRows.join('') : `<p class="font-mono text-xs text-mute">${L.none}</p>`;
 
     $('script').textContent = d.script;
 

@@ -1,7 +1,11 @@
 # 🎧 podcast2go
 
-[![English](https://img.shields.io/badge/lang-English-gray?style=flat-square)](README.md)
-[![简体中文](https://img.shields.io/badge/lang-简体中文-2563eb?style=flat-square)](README.zh-CN.md)
+[![简体中文](https://img.shields.io/badge/README-简体中文-15803d?style=flat-square)](README.zh-CN.md)
+[![English](https://img.shields.io/badge/README-English-111111?style=flat-square)](README.md)
+[![Python](https://img.shields.io/badge/Python-3.10+-15803d?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-后端-15803d?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+![引擎](https://img.shields.io/badge/引擎-免费%20%2F%20免%20key-15803d?style=flat-square)
+![PWA](https://img.shields.io/badge/PWA-后台播放-111111?style=flat-square)
 
 > 把一个很长的播客 / 视频 / 文章，压成一段**时长可控、重点突出、并经过网络检索补充**的语音播客 —— 专为通勤、跑步、散步、开车时**后台收听**而设计。
 
@@ -39,10 +43,28 @@
 | 能力 | 随附（免费） | 可自行接入的推荐项 |
 |---|---|---|
 | **LLM** | 任意 OpenAI 兼容端点 | OpenAI · Groq · Together · OpenRouter · Nebius · 本地 **Ollama** |
-| **TTS** | edge-tts（多语言含中文） | OpenAI TTS · ElevenLabs · Azure · Piper（离线） |
+| **TTS** | edge-tts（多语言含中文） | OpenAI TTS · ElevenLabs · Azure · Piper（离线） · [VoxCPM](https://github.com/OpenBMB/VoxCPM)（本地, 可克隆音色） |
 | **网络搜索** | DuckDuckGo（`ddgs`） | Tavily · Brave · Serper |
 | **正文抽取** | trafilatura | Tavily Extract · Mercury · Readability |
 | **STT**（音频源） | faster-whisper | — |
+
+### 语音合成（TTS）
+
+随附的语音引擎是 [**edge-tts**](https://github.com/rany2/edge-tts) —— 微软 Edge 的在线神经语音。
+**免费、无需 key**，输出 **mp3**（`backend/providers/tts.py`）。
+
+- **音色按输出语言自动选择。** 英语、中文、日语、法语、德语、西班牙语、葡萄牙语各对应一个默认神经
+  音色（如 `en-US-AriaNeural`、`zh-CN-XiaoxiaoNeural`），其余回退英语。想锁定特定音色，在
+  `backend/.env` 里设 `EDGE_VOICE=`（也可在界面按会话设置）。
+- **在线，非离线。** edge-tts 从微软服务流式取音，所以合成**需要联网**——它不是本地/离线音色。要本地/
+  离线出音，换 **Piper**（轻量、跑 CPU）或 **[VoxCPM](https://github.com/OpenBMB/VoxCPM)**（OpenBMB，
+  Apache-2.0，开放权重）——一个 2B 本地模型，48 kHz 录音棚级音质、可零样本克隆音色，覆盖 30 种语言
+  （含中英）；需要 NVIDIA GPU（约 8 GB 显存）。
+- **时长由脚本决定，不是靠语音。** 音频之所以约等于`目标分钟`，是因为脚本步骤按确定性字数预算写稿
+  （`分钟 × WPM`，默认 `WPM=150`）。成品 mp3 的真实时长再用 `mutagen` 量出来并显示在播放器。
+- **更换引擎**：在 `backend/providers/tts.py` 加一个分支、返回同样的 `{audio, ext, duration}`
+  结构即可 —— OpenAI TTS · ElevenLabs · Azure · Piper（离线） ·
+  [VoxCPM](https://github.com/OpenBMB/VoxCPM)（`pip install voxcpm`，本地 GPU）。
 
 ## 快速开始
 
@@ -74,8 +96,38 @@ LLM_BASE_URL=https://api.groq.com/openai/v1 LLM_API_KEY=gsk_...  LLM_MODEL=llama
 LLM_BASE_URL=http://localhost:11434/v1      LLM_API_KEY=ollama   LLM_MODEL=llama3.1
 ```
 
-也可在界面 ⚙️ 面板里按会话设置 LLM 端点（存于浏览器本地）。
+也可在界面顶部的设置面板里按会话设置 LLM 端点（存于浏览器本地）。
 要转写音频/播客直链，再 `pip install faster-whisper`。
+
+## 新手指引
+
+第一次用？这是从零到一段成品播客的最短路径——**不需要任何付费 API**。
+
+**1 · 准备一个 LLM（免费方案）。** podcast2go 只需要一个 LLM 端点。完全免费的路线是在本机跑
+[Ollama](https://ollama.com)：
+
+```bash
+# 从 ollama.com 装好 Ollama，然后：
+ollama pull llama3.1
+```
+
+想用云端模型？任意 OpenAI 兼容 key 都行——见 [配置 LLM](#配置-llm唯一必填)。
+
+**2 · 安装并启动。** 按上面的 [快速开始](#快速开始)（克隆 → `.env` → `pip install` →
+`uvicorn`）。当终端打印 `Uvicorn running on http://127.0.0.1:8000`，在浏览器打开这个地址。
+
+**3 · 生成你的第一段播客。**
+
+1. 贴一个**链接**——文章 URL 或 YouTube 链接。
+2. 选一个**目标时长**（3 / 5 / 10 / 15 分钟）。
+3. *（可选）* 展开**高级选项**，设置核心点、语气/视角、输出语言。
+4. 点**生成播客**，看五个步骤依次跑完（解析 → 提取 → 检索 → 脚本 → 合成）。
+5. 播放器出现后按播放——或锁屏继续听（后台播放）。
+
+**4 · 没在 `.env` 填 key？用界面面板。** 点顶部的设置面板，把 LLM Base URL / key / model 贴进去
+（仅存于当前浏览器，手机上很方便）。留空则回退到 `backend/.env`。
+
+> 想压缩音频/播客直链（不只是文章/YouTube）？先 `pip install faster-whisper` 一次。
 
 ## 说明
 
