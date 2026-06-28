@@ -40,19 +40,19 @@
 
 ## 引擎（均可替换）
 
-随附引擎全部免费/开源、**无需 key**。架构可插拔——想用付费 API，只需在对应 `providers/*.py` 加分支。
+本项目默认所用的引擎全部免费/开源、**无需 key**。架构可插拔——想用付费 API，只需在对应 `providers/*.py` 加分支。
 
-| 能力 | 随附（免费） | 可自行接入的推荐项 |
+| 能力 | 本项目使用的方案 | 可自行接入的推荐项 |
 |---|---|---|
-| **LLM** | 任意 OpenAI 兼容端点 | OpenAI · Groq · Together · OpenRouter · Nebius · 本地 **Ollama** |
-| **TTS** | edge-tts（多语言含中文） | OpenAI TTS · ElevenLabs · Azure · Piper（离线） · [VoxCPM](https://github.com/OpenBMB/VoxCPM)（本地, 可克隆音色） |
-| **网络搜索** | DuckDuckGo（`ddgs`） | Tavily · Brave · Serper |
+| **LLM** | 任意 OpenAI 兼容端点 | OpenAI · Groq · OpenRouter · DeepSeek · 智谱 GLM · 通义千问 Qwen · 月之暗面 Kimi · 本地 **Ollama** |
+| **TTS** | edge-tts（多语言含中文） | OpenAI TTS · ElevenLabs · Piper（离线） · [CosyVoice](https://github.com/FunAudioLLM/CosyVoice)（阿里, 开源） · [VoxCPM](https://github.com/OpenBMB/VoxCPM)（本地, 可克隆音色） |
+| **网络搜索** | DuckDuckGo（`ddgs`） | Tavily · Brave · Serper · LLM/agent 原生联网搜索 |
 | **正文抽取** | trafilatura | Tavily Extract · Mercury · Readability |
 | **STT**（音频源） | faster-whisper | — |
 
 ### 语音合成（TTS）
 
-随附的语音引擎是 [**edge-tts**](https://github.com/rany2/edge-tts) —— 微软 Edge 的在线神经语音。
+本项目使用的语音引擎是 [**edge-tts**](https://github.com/rany2/edge-tts) —— 微软 Edge 的在线神经语音。
 **免费、无需 key**，输出 **mp3**（`backend/providers/tts.py`）。
 
 - **音色按输出语言自动选择。** 英语、中文、日语、法语、德语、西班牙语、葡萄牙语各对应一个默认神经
@@ -60,12 +60,13 @@
   `backend/.env` 里设 `EDGE_VOICE=`（也可在界面按会话设置）。
 - **在线，非离线。** edge-tts 从微软服务流式取音，所以合成**需要联网**——它不是本地/离线音色。要本地/
   离线出音，换 **Piper**（轻量、跑 CPU）或 **[VoxCPM](https://github.com/OpenBMB/VoxCPM)**（OpenBMB，
-  Apache-2.0，开放权重）——一个 2B 本地模型，48 kHz 录音棚级音质、可零样本克隆音色，覆盖 30 种语言
-  （含中英）；需要 NVIDIA GPU（约 8 GB 显存）。
+  Apache-2.0，开放权重）——一个紧凑的本地模型，录音棚级音质、可零样本克隆音色（中文、英文等）；可离线
+  运行，但需要 NVIDIA GPU。
 - **时长由脚本决定，不是靠语音。** 音频之所以约等于`目标分钟`，是因为脚本步骤按确定性字数预算写稿
   （`分钟 × WPM`，默认 `WPM=150`）。成品 mp3 的真实时长再用 `mutagen` 量出来并显示在播放器。
 - **更换引擎**：在 `backend/providers/tts.py` 加一个分支、返回同样的 `{audio, ext, duration}`
-  结构即可 —— OpenAI TTS · ElevenLabs · Azure · Piper（离线） ·
+  结构即可 —— OpenAI TTS · ElevenLabs · Piper（离线） ·
+  [CosyVoice](https://github.com/FunAudioLLM/CosyVoice)（阿里, 开源） ·
   [VoxCPM](https://github.com/OpenBMB/VoxCPM)（`pip install voxcpm`，本地 GPU）。
 
 ## 快速开始
@@ -90,12 +91,14 @@ uvicorn main:app --reload --port 8000
 编辑 `backend/.env`，指向任意 OpenAI 兼容端点，例如：
 
 ```bash
-# 云端（任选其一）
-LLM_BASE_URL=https://api.openai.com/v1      LLM_API_KEY=sk-...   LLM_MODEL=gpt-4o-mini
-LLM_BASE_URL=https://api.groq.com/openai/v1 LLM_API_KEY=gsk_...  LLM_MODEL=llama-3.3-70b-versatile
+# 云端（任选其一）——国产优先
+LLM_BASE_URL=https://api.deepseek.com/v1          LLM_API_KEY=sk-...  LLM_MODEL=deepseek-chat
+LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4 LLM_API_KEY=...     LLM_MODEL=glm-4-flash
+LLM_BASE_URL=https://api.openai.com/v1            LLM_API_KEY=sk-...  LLM_MODEL=gpt-4o-mini
+LLM_BASE_URL=https://api.groq.com/openai/v1       LLM_API_KEY=gsk_... LLM_MODEL=llama-3.3-70b-versatile
 
-# 完全本地、免费（无 key）——装好 Ollama，`ollama pull llama3.1`，然后：
-LLM_BASE_URL=http://localhost:11434/v1      LLM_API_KEY=ollama   LLM_MODEL=llama3.1
+# 完全本地（无 key）——装好 Ollama，`ollama pull llama3.1`，然后：
+LLM_BASE_URL=http://localhost:11434/v1            LLM_API_KEY=ollama  LLM_MODEL=llama3.1
 ```
 
 也可在界面顶部的设置面板里按会话设置 LLM 端点（存于浏览器本地）。
@@ -111,7 +114,7 @@ Base URL / key / model，它们会随每次请求发送并优先生效，所以*
 第一次用？这是从零到一段成品播客的最短路径——**不需要任何付费 API**。
 
 **1 · 指向一个 LLM。** podcast2go 只需要一个 LLM 端点——任意 OpenAI 兼容 API 都行（OpenAI、Groq、
-Together、OpenRouter…）。把 Base URL / key / model 填进 `backend/.env`，或直接填到界面 BYOK 设置
+OpenRouter、DeepSeek、智谱 GLM…）。把 Base URL / key / model 填进 `backend/.env`，或直接填到界面 BYOK 设置
 面板——见 [配置 LLM](#配置-llm唯一必填)。
 
 *可选的免 key 方案：* 用 [Ollama](https://ollama.com) 在本机跑一个模型：

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()  # reads backend/.env when uvicorn runs from backend/
 
 # ---- LLM (any OpenAI-compatible endpoint) ----
-# Works with OpenAI, Together, Groq, OpenRouter, Nebius, a local Ollama, etc.
+# Works with OpenAI, Groq, OpenRouter, DeepSeek, Zhipu GLM, a local Ollama, etc.
 # See .env.example for several recommended endpoints.
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")

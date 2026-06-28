@@ -27,9 +27,9 @@ FastAPI (main.py) → settings.resolve(req) → pipeline/orchestrator.py 串联 
 
 | 能力 | 随附实现 | 可自行接入 |
 |---|---|---|
-| LLM | 任意 OpenAI 兼容端点（`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL`） | OpenAI / Groq / Together / OpenRouter / Nebius / 本地 Ollama |
-| TTS | edge-tts（免费，多语言含中文） | OpenAI TTS / ElevenLabs / Azure / Piper(离线) |
-| 搜索 | DuckDuckGo (ddgs) | Tavily / Brave / Serper |
+| LLM | 任意 OpenAI 兼容端点（`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL`） | OpenAI / Groq / OpenRouter / DeepSeek / 智谱 GLM / 通义千问 / Kimi / 本地 Ollama |
+| TTS | edge-tts（免费，多语言含中文） | OpenAI TTS / ElevenLabs / Piper(离线) / CosyVoice(阿里·开源) / VoxCPM(本地) |
+| 搜索 | DuckDuckGo (ddgs) | Tavily / Brave / Serper / LLM/agent 原生联网搜索 |
 | 抽取 | trafilatura | Tavily / Mercury / Readability |
 | STT | faster-whisper（可选安装，音频源用） | — |
 

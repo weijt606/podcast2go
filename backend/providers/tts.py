@@ -1,8 +1,8 @@
 """TTS: spoken script -> audio bytes, via edge-tts (free, no key).
 
 Returns {"audio": bytes, "ext": "mp3", "duration": seconds}.
-To add a paid engine (OpenAI TTS, ElevenLabs, Azure, Piper, …), branch on
-s.* and return the same shape.
+To add another engine (OpenAI TTS, ElevenLabs, Piper, CosyVoice, VoxCPM, …),
+branch on s.* and return the same shape.
 """
 import io
 

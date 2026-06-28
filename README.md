@@ -45,20 +45,20 @@ link ─▶ ingest ─▶ extract key points ─▶ web research ─▶ time-box
 
 ## Engines (all swappable)
 
-Bundled engines are free / open-source and need **no API key**. The architecture is
-pluggable — to use a managed API instead, add a branch in the matching `providers/*.py`.
+The engines this project ships with are free / open-source and need **no API key**. The
+architecture is pluggable — to use a managed API instead, add a branch in the matching `providers/*.py`.
 
-| Capability | Bundled (free) | Recommended alternatives you can plug in |
+| Capability | Used by this project | Recommended alternatives you can plug in |
 |---|---|---|
-| **LLM** | any OpenAI-compatible endpoint | OpenAI · Groq · Together · OpenRouter · Nebius · local **Ollama** |
-| **TTS** | edge-tts (multi-language incl. Chinese) | OpenAI TTS · ElevenLabs · Azure · Piper (offline) · [VoxCPM](https://github.com/OpenBMB/VoxCPM) (local, voice cloning) |
-| **Web search** | DuckDuckGo (`ddgs`) | Tavily · Brave · Serper |
+| **LLM** | any OpenAI-compatible endpoint | OpenAI · Groq · OpenRouter · DeepSeek · Zhipu GLM · Qwen · Moonshot (Kimi) · local **Ollama** |
+| **TTS** | edge-tts (multi-language incl. Chinese) | OpenAI TTS · ElevenLabs · Piper (offline) · [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) (Alibaba, open-source) · [VoxCPM](https://github.com/OpenBMB/VoxCPM) (local, voice cloning) |
+| **Web search** | DuckDuckGo (`ddgs`) | Tavily · Brave · Serper · LLM/agent-native web search |
 | **Article extract** | trafilatura | Tavily Extract · Mercury · Readability |
 | **STT** (audio sources) | faster-whisper | — |
 
 ### Voice synthesis (TTS)
 
-The bundled voice engine is [**edge-tts**](https://github.com/rany2/edge-tts) — Microsoft Edge's
+The voice engine this project uses is [**edge-tts**](https://github.com/rany2/edge-tts) — Microsoft Edge's
 online neural voices. It's **free, needs no API key**, and outputs **mp3** (`backend/providers/tts.py`).
 
 - **Voice is auto-picked from the output language.** English, Chinese, Japanese, French, German,
@@ -68,13 +68,14 @@ online neural voices. It's **free, needs no API key**, and outputs **mp3** (`bac
 - **Online, not offline.** edge-tts streams from Microsoft's service, so synthesis needs an
   internet connection — it isn't a local/offline voice. For local/offline audio, swap in
   **Piper** (lightweight, CPU) or **[VoxCPM](https://github.com/OpenBMB/VoxCPM)** (OpenBMB,
-  Apache-2.0, open weights) — a 2B local model with studio-quality 48 kHz output and zero-shot
-  voice cloning across 30 languages (incl. Chinese/English); needs an NVIDIA GPU (~8 GB VRAM).
+  Apache-2.0, open weights) — a compact local model with studio-quality output and zero-shot
+  voice cloning (Chinese, English, and more); runs offline but needs an NVIDIA GPU.
 - **Length is controlled by the script, not the voice.** The clip runs ~`target minutes` because
   the script step writes to a deterministic word budget (`minutes × WPM`, `WPM=150` by default).
   The actual mp3 length is then measured (via `mutagen`) and shown in the player.
 - **Swap engines** by adding a branch in `backend/providers/tts.py` and returning the same
-  `{audio, ext, duration}` shape — OpenAI TTS · ElevenLabs · Azure · Piper (offline) ·
+  `{audio, ext, duration}` shape — OpenAI TTS · ElevenLabs · Piper (offline) ·
+  [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) (Alibaba, open-source) ·
   [VoxCPM](https://github.com/OpenBMB/VoxCPM) (`pip install voxcpm`, local GPU).
 
 ## Quickstart
@@ -99,12 +100,14 @@ uvicorn main:app --reload --port 8000
 Edit `backend/.env` and point it at any OpenAI-compatible endpoint, e.g.:
 
 ```bash
-# Hosted (pick one)
-LLM_BASE_URL=https://api.openai.com/v1      LLM_API_KEY=sk-...   LLM_MODEL=gpt-4o-mini
-LLM_BASE_URL=https://api.groq.com/openai/v1 LLM_API_KEY=gsk_...  LLM_MODEL=llama-3.3-70b-versatile
+# Hosted (pick one) — domestic options first
+LLM_BASE_URL=https://api.deepseek.com/v1          LLM_API_KEY=sk-...  LLM_MODEL=deepseek-chat
+LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4 LLM_API_KEY=...     LLM_MODEL=glm-4-flash
+LLM_BASE_URL=https://api.openai.com/v1            LLM_API_KEY=sk-...  LLM_MODEL=gpt-4o-mini
+LLM_BASE_URL=https://api.groq.com/openai/v1       LLM_API_KEY=gsk_... LLM_MODEL=llama-3.3-70b-versatile
 
-# Fully local & free (no key) — install Ollama, `ollama pull llama3.1`, then:
-LLM_BASE_URL=http://localhost:11434/v1      LLM_API_KEY=ollama   LLM_MODEL=llama3.1
+# Fully local (no key) — install Ollama, `ollama pull llama3.1`, then:
+LLM_BASE_URL=http://localhost:11434/v1            LLM_API_KEY=ollama  LLM_MODEL=llama3.1
 ```
 
 You can also set the LLM endpoint per-session from the UI's settings panel (stored in your browser).
@@ -121,7 +124,7 @@ To transcribe audio/podcast URLs, also `pip install faster-whisper`.
 New here? This is the shortest path from zero to a finished audio digest — no paid API required.
 
 **1 · Point it at an LLM.** podcast2go needs exactly one LLM endpoint — any OpenAI-compatible API
-works (OpenAI, Groq, Together, OpenRouter, …). Put the Base URL / key / model in `backend/.env`,
+works (OpenAI, Groq, OpenRouter, DeepSeek, Zhipu GLM, …). Put the Base URL / key / model in `backend/.env`,
 or straight into the app's BYOK settings panel — see
 [Configure the LLM](#configure-the-llm-the-only-required-key).
 
