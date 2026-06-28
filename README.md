@@ -50,13 +50,19 @@ link ─▶ ingest ─▶ extract key points ─▶ web research ─▶ time-box
 
 ## Screenshots
 
-<p>
-  <img src="./docs/screenshot-home.png" width="300" alt="podcast2go home: paste a link, pick a length" />
-  <img src="./docs/screenshot-advanced.png" width="300" alt="advanced & settings: LLM/TTS test buttons, TTS engine choice, mode, voice picker with preview" />
-</p>
+<table>
+  <tr>
+    <td align="center"><b>Home</b></td>
+    <td align="center"><b>Advanced &amp; settings</b></td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="./docs/screenshot-home.png" width="300" alt="podcast2go home: paste a link, pick a length" /></td>
+    <td valign="top"><img src="./docs/screenshot-advanced.png" width="300" alt="advanced & settings: LLM/TTS test buttons, TTS engine choice, mode, voice picker with preview" /></td>
+  </tr>
+</table>
 
-Home (paste a link, pick a length) · advanced & settings (LLM/TTS test buttons, TTS engine choice,
-single/dialogue mode, voice picker with **▶ Preview**).
+Home (paste a link, pick a length) · advanced &amp; settings (LLM/TTS test buttons, TTS engine
+choice, single/dialogue mode, voice picker with **▶ Preview**).
 
 ## Engines (all swappable)
 

@@ -45,10 +45,16 @@
 
 ## 截图
 
-<p>
-  <img src="./docs/screenshot-home.png" width="300" alt="podcast2go 首页：贴链接、选时长" />
-  <img src="./docs/screenshot-advanced.png" width="300" alt="高级与设置：LLM/TTS 测试按钮、TTS 引擎选择、模式、音色选择 + 试听" />
-</p>
+<table>
+  <tr>
+    <td align="center"><b>首页</b></td>
+    <td align="center"><b>高级与设置</b></td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="./docs/screenshot-home.png" width="300" alt="podcast2go 首页：贴链接、选时长" /></td>
+    <td valign="top"><img src="./docs/screenshot-advanced.png" width="300" alt="高级与设置：LLM/TTS 测试按钮、TTS 引擎选择、模式、音色选择 + 试听" /></td>
+  </tr>
+</table>
 
 首页（贴链接、选时长）· 高级与设置（LLM/TTS 测试按钮、TTS 引擎选择、单人/对谈模式、音色选择 + **▶ 试听**）。
 
