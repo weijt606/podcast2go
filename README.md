@@ -28,20 +28,25 @@ endpoint (and that can be a local one).
 link ─▶ ingest ─▶ extract key points ─▶ web research ─▶ time-boxed script ─▶ TTS ─▶ 🎧
 ```
 
-1. **Ingest** — articles (trafilatura), YouTube (captions), or audio/podcast URLs (Whisper STT)
+1. **Ingest** — articles (trafilatura), YouTube (captions), **Apple Podcasts / RSS feeds**, or audio URLs (Whisper STT)
 2. **Extract** — an LLM distills the long text into ranked key points
 3. **Research** — the top points are searched on the web for background and sources
-4. **Script** — a length-budgeted spoken script (`target minutes × words-per-minute`)
+4. **Script** — a length-budgeted spoken script (`target minutes × words-per-minute`), written in a natural human voice (anti-vibe-writing rules), as a monologue or a two-host dialogue
 5. **Synthesize** — TTS renders the audio; the UI supports lock-screen background playback
 
 ### Features
 
 - ⏱️ **Time-controlled** output (3 / 5 / 10 / 15 min) via a deterministic word budget
+- 🎙️ **Two formats**: single-host narration or **two-host dialogue** (each speaker its own voice)
+- 🗣️ **Voice picker with preview** — curated edge-tts voices per language, or a custom TTS API
+- 🧑 **Human-sounding scripts** — anti-vibe-writing rules strip the AI-writing flavor (EN / 中文)
+- 📻 **Podcast & audio ingestion** — Apple Podcasts links, RSS feeds, YouTube, articles, audio files
 - 🎛️ **Steerable**: focus topics, deep-dive topics, tone/angle, output language
 - 🌍 **Multi-language** audio (incl. Chinese) via edge-tts
+- 🔌 **Connectivity test** buttons for the LLM and TTS endpoints
 - 📱 Mobile PWA with **background playback** (Media Session API)
 - 🌐 **Bilingual UI** (English / 简体中文) toggle
-- 🔑 **BYOK** — bring your own LLM endpoint/key from the UI or `.env`
+- 🔑 **BYOK** — bring your own LLM / TTS endpoint & key from the UI or `.env`
 
 ## Engines (all swappable)
 
@@ -61,6 +66,10 @@ architecture is pluggable — to use a managed API instead, add a branch in the 
 The voice engine this project uses is [**edge-tts**](https://github.com/rany2/edge-tts) — Microsoft Edge's
 online neural voices. It's **free, needs no API key**, and outputs **mp3** (`backend/providers/tts.py`).
 
+- **Pick a voice, preview it, choose a format.** Advanced options let you select the narrator
+  voice from a curated list of natural voices and hit **▶ Preview** to hear a sample, and switch
+  between single-host narration and two-host **dialogue** (each speaker gets its own voice). The
+  LLM endpoint and a custom TTS API are both **testable** from the settings panel.
 - **Voice is auto-picked from the output language.** English, Chinese, Japanese, French, German,
   Spanish, and Portuguese each map to a default neural voice (e.g. `en-US-AriaNeural`,
   `zh-CN-XiaoxiaoNeural`); anything else falls back to English. Pin a specific voice with
@@ -117,7 +126,8 @@ If you fill the Base URL / key / model in the app's BYOK settings panel, they're
 request and take precedence, so you can run with **no `.env` at all**. Blank UI fields fall back to
 `.env`. Use `.env` when you want a persistent default instead of re-typing it in each browser.
 
-To transcribe audio/podcast URLs, also `pip install faster-whisper`.
+To ingest Apple Podcasts / RSS feeds / audio URLs (which are transcribed with Whisper STT), also
+`pip install faster-whisper`. (Spotify isn't supported — it exposes no open episode audio.)
 
 ## First-time guide
 

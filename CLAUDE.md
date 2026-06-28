@@ -13,11 +13,11 @@
   │  GET  /api/result/{job_id}    → 完成后取结果
   ▼
 FastAPI (main.py) → settings.resolve(req) → pipeline/orchestrator.py 串联 5 阶段：
-  1. ingest    文章=trafilatura / YouTube=字幕 / 音频=whisper STT
+  1. ingest    文章=trafilatura / YouTube=字幕 / Apple Podcasts+RSS=解析音频 / 音频=whisper STT
   2. extract   LLM map-reduce → 排序后的核心重点
   3. research  网络检索补充 top 重点（并发）
-  4. script    LLM 按字数预算写定长口语脚本
-  5. tts       edge-tts 合成 mp3
+  4. script    LLM 按字数预算写定长口语脚本（真人口吻 anti-vibe；单人/对谈）
+  5. tts       edge-tts 合成 mp3（可选音色 / 双人对谈拼接 / 或自定义 OpenAI 兼容 TTS API）
 音频写入 static/audio/{job_id}.{ext}，由 /audio 提供。
 ```
 
