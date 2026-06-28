@@ -1,11 +1,11 @@
 # 🎧 podcast2go
 
 [![English](https://img.shields.io/badge/README-English-15803d?style=flat-square)](README.md)
-[![简体中文](https://img.shields.io/badge/README-简体中文-111111?style=flat-square)](README.zh-CN.md)
-[![Python](https://img.shields.io/badge/Python-3.10+-15803d?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-backend-15803d?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-![Engines](https://img.shields.io/badge/engines-free%20%2F%20no%20key-15803d?style=flat-square)
-![PWA](https://img.shields.io/badge/PWA-background%20audio-111111?style=flat-square)
+[![简体中文](https://img.shields.io/badge/README-简体中文-1f6feb?style=flat-square)](README.zh-CN.md)
+[![Python](https://img.shields.io/badge/Python-3.10+-111111?style=flat-square)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-backend-111111?style=flat-square)](https://fastapi.tiangolo.com/)
+![Engines](https://img.shields.io/badge/engines-free%20%2F%20no%20key-orange?style=flat-square)
+![PWA](https://img.shields.io/badge/PWA-background%20audio-1f6feb?style=flat-square)
 
 > Turn a long podcast / video / article into a **time-boxed, key-point-focused audio digest enriched with web research** — built for listening on the go: commuting, running, walking, driving.
 
@@ -83,7 +83,7 @@ Requires **Python ≥ 3.10**.
 git clone https://github.com/weijt606/podcast2go.git
 cd podcast2go
 
-cp .env.example backend/.env          # set ONE LLM endpoint (see below)
+cp .env.example backend/.env          # optional — or set the LLM in the app's BYOK panel
 
 cd backend
 python3 -m venv .venv && source .venv/bin/activate
@@ -106,22 +106,29 @@ LLM_BASE_URL=http://localhost:11434/v1      LLM_API_KEY=ollama   LLM_MODEL=llama
 ```
 
 You can also set the LLM endpoint per-session from the UI's settings panel (stored in your browser).
+
+**Do I still need the `.env` file?** No — it's optional. `.env` only holds *server-side defaults*.
+If you fill the Base URL / key / model in the app's BYOK settings panel, they're sent with each
+request and take precedence, so you can run with **no `.env` at all**. Blank UI fields fall back to
+`.env`. Use `.env` when you want a persistent default instead of re-typing it in each browser.
+
 To transcribe audio/podcast URLs, also `pip install faster-whisper`.
 
 ## First-time guide
 
 New here? This is the shortest path from zero to a finished audio digest — no paid API required.
 
-**1 · Get an LLM (free option).** podcast2go needs exactly one LLM endpoint. The fully-free
-route is [Ollama](https://ollama.com) on your own machine:
+**1 · Point it at an LLM.** podcast2go needs exactly one LLM endpoint — any OpenAI-compatible API
+works (OpenAI, Groq, Together, OpenRouter, …). Put the Base URL / key / model in `backend/.env`,
+or straight into the app's BYOK settings panel — see
+[Configure the LLM](#configure-the-llm-the-only-required-key).
+
+*Optional, no-key alternative:* run a model locally with [Ollama](https://ollama.com):
 
 ```bash
 # install Ollama from ollama.com, then:
 ollama pull llama3.1
 ```
-
-Prefer a hosted model? Any OpenAI-compatible key works — see
-[Configure the LLM](#configure-the-llm-the-only-required-key).
 
 **2 · Install & run.** Follow [Quickstart](#quickstart) above (clone → `.env` → `pip install`
 → `uvicorn`). When the terminal prints `Uvicorn running on http://127.0.0.1:8000`, open that

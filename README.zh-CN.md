@@ -1,11 +1,11 @@
 # 🎧 podcast2go
 
 [![简体中文](https://img.shields.io/badge/README-简体中文-15803d?style=flat-square)](README.zh-CN.md)
-[![English](https://img.shields.io/badge/README-English-111111?style=flat-square)](README.md)
-[![Python](https://img.shields.io/badge/Python-3.10+-15803d?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-后端-15803d?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-![引擎](https://img.shields.io/badge/引擎-免费%20%2F%20免%20key-15803d?style=flat-square)
-![PWA](https://img.shields.io/badge/PWA-后台播放-111111?style=flat-square)
+[![English](https://img.shields.io/badge/README-English-1f6feb?style=flat-square)](README.md)
+[![Python](https://img.shields.io/badge/Python-3.10+-111111?style=flat-square)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-后端-111111?style=flat-square)](https://fastapi.tiangolo.com/)
+![引擎](https://img.shields.io/badge/引擎-免费%20%2F%20免%20key-orange?style=flat-square)
+![PWA](https://img.shields.io/badge/PWA-后台播放-1f6feb?style=flat-square)
 
 > 把一个很长的播客 / 视频 / 文章，压成一段**时长可控、重点突出、并经过网络检索补充**的语音播客 —— 专为通勤、跑步、散步、开车时**后台收听**而设计。
 
@@ -74,7 +74,7 @@
 git clone https://github.com/weijt606/podcast2go.git
 cd podcast2go
 
-cp .env.example backend/.env          # 配置一个 LLM 端点（见下）
+cp .env.example backend/.env          # 可选——也可在界面 BYOK 面板里配置 LLM
 
 cd backend
 python3 -m venv .venv && source .venv/bin/activate
@@ -97,21 +97,27 @@ LLM_BASE_URL=http://localhost:11434/v1      LLM_API_KEY=ollama   LLM_MODEL=llama
 ```
 
 也可在界面顶部的设置面板里按会话设置 LLM 端点（存于浏览器本地）。
+
+**还需要 `.env` 文件吗？** 不需要，它是可选的。`.env` 只是*服务端默认值*。如果你在界面 BYOK 面板里填了
+Base URL / key / model，它们会随每次请求发送并优先生效，所以**完全不建 `.env` 也能跑**。界面留空的字段
+才回退到 `.env`。想要一个持久默认值、不必每个浏览器重填时，再用 `.env`。
+
 要转写音频/播客直链，再 `pip install faster-whisper`。
 
 ## 新手指引
 
 第一次用？这是从零到一段成品播客的最短路径——**不需要任何付费 API**。
 
-**1 · 准备一个 LLM（免费方案）。** podcast2go 只需要一个 LLM 端点。完全免费的路线是在本机跑
-[Ollama](https://ollama.com)：
+**1 · 指向一个 LLM。** podcast2go 只需要一个 LLM 端点——任意 OpenAI 兼容 API 都行（OpenAI、Groq、
+Together、OpenRouter…）。把 Base URL / key / model 填进 `backend/.env`，或直接填到界面 BYOK 设置
+面板——见 [配置 LLM](#配置-llm唯一必填)。
+
+*可选的免 key 方案：* 用 [Ollama](https://ollama.com) 在本机跑一个模型：
 
 ```bash
 # 从 ollama.com 装好 Ollama，然后：
 ollama pull llama3.1
 ```
-
-想用云端模型？任意 OpenAI 兼容 key 都行——见 [配置 LLM](#配置-llm唯一必填)。
 
 **2 · 安装并启动。** 按上面的 [快速开始](#快速开始)（克隆 → `.env` → `pip install` →
 `uvicorn`）。当终端打印 `Uvicorn running on http://127.0.0.1:8000`，在浏览器打开这个地址。
