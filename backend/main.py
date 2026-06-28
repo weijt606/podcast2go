@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 import os
 
@@ -7,7 +8,10 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+import settings
+from pipeline import llm
 from pipeline.orchestrator import run_pipeline
+from providers.tts import synthesize
 from state import JOBS, STEPS, new_job
 
 app = FastAPI(title="podcast2go")
@@ -22,10 +26,15 @@ class GenReq(BaseModel):
     deep_topics: str = ""
     prefs: str = ""
     language: str = "English"
-    # BYOK: optional per-request LLM overrides; blank -> fall back to backend/.env
+    # BYOK: optional per-request overrides; blank -> fall back to backend/.env
     llm_api_key: str = ""
     llm_base_url: str = ""
     llm_model: str = ""
+    tts_engine: str = ""
+    tts_base_url: str = ""
+    tts_api_key: str = ""
+    tts_model: str = ""
+    tts_voice: str = ""
 
 
 @app.post("/api/generate")
@@ -33,6 +42,48 @@ async def generate(req: GenReq):
     job = new_job()
     asyncio.create_task(run_pipeline(job, req.model_dump()))
     return {"job_id": job.id, "steps": STEPS}
+
+
+class LLMTestReq(BaseModel):
+    llm_api_key: str = ""
+    llm_base_url: str = ""
+    llm_model: str = ""
+
+
+@app.post("/api/test_llm")
+async def test_llm(req: LLMTestReq):
+    """Probe the configured LLM endpoint with a tiny completion."""
+    s = settings.resolve(req.model_dump())
+    try:
+        reply = await llm.chat(s, "You are a connectivity probe.", "Reply with the single word: ok",
+                               json_mode=False, temperature=0)
+        return {"ok": True, "detail": (reply or "").strip()[:80] or "connected"}
+    except Exception as e:
+        return {"ok": False, "detail": str(e)[:300]}
+
+
+class TTSTestReq(BaseModel):
+    language: str = "English"
+    tts_engine: str = ""
+    tts_base_url: str = ""
+    tts_api_key: str = ""
+    tts_model: str = ""
+    tts_voice: str = ""
+
+
+@app.post("/api/test_tts")
+async def test_tts(req: TTSTestReq):
+    """Synthesize a short sample so the user can confirm the TTS engine works."""
+    s = settings.resolve(req.model_dump())
+    sample = "你好，这是 podcast2go 的语音测试。" if (req.language or "").startswith(("中", "Chinese")) \
+        else "Hello, this is a podcast2go voice test."
+    try:
+        out = await synthesize(s, sample, req.language or "English")
+        b64 = base64.b64encode(out["audio"]).decode()
+        return {"ok": True, "detail": f"{out['duration']:.1f}s · {out['ext']}",
+                "sample": f"data:audio/{out['ext']};base64,{b64}"}
+    except Exception as e:
+        return {"ok": False, "detail": str(e)[:300]}
 
 
 @app.get("/api/events/{job_id}")

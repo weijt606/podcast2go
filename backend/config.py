@@ -14,6 +14,14 @@ LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 # ---- TTS: edge-tts (free, no key, multi-language incl. Chinese) ----
 EDGE_VOICE = os.getenv("EDGE_VOICE", "")  # override the auto voice-by-language
 
+# ---- TTS engine selection ----
+# "edge" = built-in edge-tts (default). "api" = any OpenAI-compatible /v1/audio/speech.
+TTS_ENGINE = os.getenv("TTS_ENGINE", "edge")
+TTS_BASE_URL = os.getenv("TTS_BASE_URL", "")   # e.g. https://api.openai.com/v1
+TTS_API_KEY = os.getenv("TTS_API_KEY", "")
+TTS_MODEL = os.getenv("TTS_MODEL", "")         # e.g. tts-1
+TTS_VOICE = os.getenv("TTS_VOICE", "")         # e.g. alloy
+
 # ---- STT for audio/podcast URLs: faster-whisper (open-source, optional dep) ----
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "base")
 

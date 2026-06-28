@@ -102,20 +102,62 @@
   <!-- ===== BYOK SETTINGS (LLM endpoint) ===== -->
   <details id="settings" class="mb-5 card p-4">
     <summary class="summary" data-i18n="settings_summary"></summary>
-    <div class="mt-4 space-y-3">
-      <div>
-        <label class="label" data-i18n="llm_base_label"></label>
-        <input id="s_llm_base" class="input" data-ph="llm_base_ph" />
+    <div class="mt-4 space-y-4">
+      <!-- LLM -->
+      <div class="space-y-3">
+        <div>
+          <label class="label" data-i18n="llm_base_label"></label>
+          <input id="s_llm_base" class="input" data-ph="llm_base_ph" />
+        </div>
+        <div>
+          <label class="label" data-i18n="llm_key_label"></label>
+          <input id="s_llm_key" type="password" class="input" data-ph="llm_key_ph" />
+        </div>
+        <div>
+          <label class="label" data-i18n="llm_model_label"></label>
+          <input id="s_llm_model" class="input" placeholder="gpt-4o-mini" />
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="test_llm" type="button" class="btn py-2 px-4" data-i18n="test_btn"></button>
+          <span id="test_llm_res" class="font-mono text-xs"></span>
+        </div>
+        <p class="text-xs text-mute" data-i18n="settings_note"></p>
       </div>
-      <div>
-        <label class="label" data-i18n="llm_key_label"></label>
-        <input id="s_llm_key" type="password" class="input" data-ph="llm_key_ph" />
+
+      <!-- TTS -->
+      <div class="space-y-3 border-t-2 border-ink pt-4">
+        <div>
+          <label class="label" data-i18n="tts_engine_label"></label>
+          <select id="s_tts_engine" class="input">
+            <option value="edge" data-i18n="tts_engine_edge"></option>
+            <option value="api" data-i18n="tts_engine_api"></option>
+          </select>
+        </div>
+        <div id="tts_api_fields" class="space-y-3 hidden">
+          <div>
+            <label class="label" data-i18n="tts_base_label"></label>
+            <input id="s_tts_base" class="input" data-ph="tts_base_ph" />
+          </div>
+          <div>
+            <label class="label" data-i18n="tts_key_label"></label>
+            <input id="s_tts_key" type="password" class="input" data-ph="tts_key_ph" />
+          </div>
+          <div>
+            <label class="label" data-i18n="tts_model_label"></label>
+            <input id="s_tts_model" class="input" placeholder="tts-1" />
+          </div>
+          <div>
+            <label class="label" data-i18n="tts_voice_label"></label>
+            <input id="s_tts_voice" class="input" placeholder="alloy" />
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="test_tts" type="button" class="btn py-2 px-4" data-i18n="test_btn"></button>
+          <span id="test_tts_res" class="font-mono text-xs"></span>
+        </div>
+        <audio id="test_tts_audio" controls class="hidden"></audio>
+        <p class="text-xs text-mute" data-i18n="tts_note"></p>
       </div>
-      <div>
-        <label class="label" data-i18n="llm_model_label"></label>
-        <input id="s_llm_model" class="input" placeholder="gpt-4o-mini" />
-      </div>
-      <p class="text-xs text-mute" data-i18n="settings_note"></p>
     </div>
   </details>
 
@@ -219,6 +261,20 @@
       llm_key_ph: "sk-… (use 'ollama' for local Ollama)",
       llm_model_label: "LLM Model",
       settings_note: "Any OpenAI-compatible endpoint (OpenAI, Groq, OpenRouter, DeepSeek, Zhipu GLM, local Ollama…). Blank fields fall back to the server .env. Keys live only in this browser and are sent with each request.",
+      test_btn: "Test",
+      testing: "Testing…",
+      test_ok: "OK",
+      test_fail: "Failed",
+      tts_engine_label: "TTS engine",
+      tts_engine_edge: "Built-in edge-tts (free, no key)",
+      tts_engine_api: "Custom TTS API (OpenAI-compatible)",
+      tts_base_label: "TTS Base URL",
+      tts_base_ph: "https://api.openai.com/v1 (OpenAI-compatible /v1/audio/speech)",
+      tts_key_label: "TTS API Key",
+      tts_key_ph: "sk-…",
+      tts_model_label: "TTS Model",
+      tts_voice_label: "TTS Voice",
+      tts_note: "Built-in edge-tts needs no key (online, multi-language incl. Chinese). Or point to any OpenAI-compatible /v1/audio/speech endpoint. Blank fields fall back to the server .env.",
       url_label: "Link (article / YouTube)",
       duration_label: "Target length",
       unit: "min",
@@ -256,6 +312,20 @@
       llm_key_ph: "sk-…（本地 Ollama 可填 ollama）",
       llm_model_label: "LLM Model",
       settings_note: "任意 OpenAI 兼容端点（OpenAI / Groq / OpenRouter / DeepSeek / 智谱 GLM / 本地 Ollama 等）。留空则用服务器 .env 默认值；Key 仅存于本浏览器，随请求发送。",
+      test_btn: "测试",
+      testing: "测试中…",
+      test_ok: "连通",
+      test_fail: "失败",
+      tts_engine_label: "TTS 引擎",
+      tts_engine_edge: "自带 edge-tts（免费，无需 key）",
+      tts_engine_api: "自定义 TTS API（OpenAI 兼容）",
+      tts_base_label: "TTS Base URL",
+      tts_base_ph: "https://api.openai.com/v1（OpenAI 兼容 /v1/audio/speech）",
+      tts_key_label: "TTS API Key",
+      tts_key_ph: "sk-…",
+      tts_model_label: "TTS Model",
+      tts_voice_label: "TTS 音色",
+      tts_note: "自带 edge-tts 无需 key（在线，多语言含中文）。或指向任意 OpenAI 兼容的 /v1/audio/speech 端点。留空则用服务器 .env 默认值。",
       url_label: "链接（文章 / YouTube）",
       duration_label: "目标时长",
       unit: "分",
@@ -310,6 +380,8 @@
   // ===================== BYOK settings =====================
   const SET_FIELDS = {
     s_llm_base:'llm_base_url', s_llm_key:'llm_api_key', s_llm_model:'llm_model',
+    s_tts_engine:'tts_engine', s_tts_base:'tts_base_url', s_tts_key:'tts_api_key',
+    s_tts_model:'tts_model', s_tts_voice:'tts_voice',
   };
   function saveSettings(){
     const data = {}; Object.keys(SET_FIELDS).forEach(id => data[id] = $(id).value);
@@ -324,6 +396,36 @@
     const p = {}; Object.entries(SET_FIELDS).forEach(([id,key]) => { const v=$(id).value.trim(); if (v) p[key]=v; });
     return p;
   }
+
+  // ===================== connectivity tests =====================
+  function paintTtsEngine(){ $('tts_api_fields').classList.toggle('hidden', $('s_tts_engine').value !== 'api'); }
+  $('s_tts_engine').addEventListener('change', paintTtsEngine);
+
+  function setRes(id, state, text){
+    const el = $(id); el.textContent = text;
+    el.style.color = state==='ok' ? '#15803d' : state==='fail' ? '#fe7da8' : '#576574';
+  }
+  async function runTest(url, payload, resId){
+    setRes(resId, 'pending', L.testing);
+    try {
+      const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).then(r=>r.json());
+      setRes(resId, r.ok ? 'ok' : 'fail', `${r.ok ? '✓ '+L.test_ok : '✕ '+L.test_fail}${r.detail ? ' · '+r.detail : ''}`);
+      return r;
+    } catch(e){ setRes(resId, 'fail', `✕ ${L.test_fail} · ${e}`); return {ok:false}; }
+  }
+  $('test_llm').onclick = () => runTest('/api/test_llm', {
+    llm_base_url:$('s_llm_base').value.trim(), llm_api_key:$('s_llm_key').value.trim(), llm_model:$('s_llm_model').value.trim(),
+  }, 'test_llm_res');
+  $('test_tts').onclick = async () => {
+    const r = await runTest('/api/test_tts', {
+      language:$('lang').value, tts_engine:$('s_tts_engine').value,
+      tts_base_url:$('s_tts_base').value.trim(), tts_api_key:$('s_tts_key').value.trim(),
+      tts_model:$('s_tts_model').value.trim(), tts_voice:$('s_tts_voice').value.trim(),
+    }, 'test_tts_res');
+    const au = $('test_tts_audio');
+    if (r && r.ok && r.sample){ au.src = r.sample; au.classList.remove('hidden'); au.play().catch(()=>{}); }
+    else au.classList.add('hidden');
+  };
 
   // ===================== screens =====================
   function show(name){ ['input','progress','player'].forEach(s =>
@@ -415,6 +517,7 @@
 
   // ===================== init =====================
   loadSettings();
+  paintTtsEngine();
   applyLang(lang);
   paintMinutes();
 </script>

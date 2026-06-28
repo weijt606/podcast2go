@@ -14,6 +14,11 @@ class Settings:
     llm_base_url: str
     llm_model: str
     edge_voice: str
+    tts_engine: str
+    tts_base_url: str
+    tts_api_key: str
+    tts_model: str
+    tts_voice: str
     whisper_model: str
     wpm: int
 
@@ -29,6 +34,11 @@ def resolve(o: dict) -> Settings:
         llm_base_url=_g(o, "llm_base_url", env.LLM_BASE_URL),
         llm_model=_g(o, "llm_model", env.LLM_MODEL),
         edge_voice=_g(o, "edge_voice", env.EDGE_VOICE),
+        tts_engine=_g(o, "tts_engine", env.TTS_ENGINE),
+        tts_base_url=_g(o, "tts_base_url", env.TTS_BASE_URL),
+        tts_api_key=_g(o, "tts_api_key", env.TTS_API_KEY),
+        tts_model=_g(o, "tts_model", env.TTS_MODEL),
+        tts_voice=_g(o, "tts_voice", env.TTS_VOICE),
         whisper_model=_g(o, "whisper_model", env.WHISPER_MODEL),
         wpm=int(o.get("wpm") or env.WPM),
     )
