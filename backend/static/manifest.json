@@ -4,11 +4,11 @@
   "description": "把长播客/视频/文章压成时长可控、重点突出的语音播客",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b0f1a",
-  "theme_color": "#0b0f1a",
+  "background_color": "#fffaef",
+  "theme_color": "#a9d877",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%236366f1'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle' fill='white'%3E%F0%9F%8E%A7%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23a9d877'/%3E%3Crect x='6' y='6' width='180' height='180' fill='none' stroke='%23141111' stroke-width='8'/%3E%3Cpath d='M58 104v-8a38 38 0 0 1 76 0v8' fill='none' stroke='%23141111' stroke-width='9' stroke-linecap='round'/%3E%3Crect x='50' y='100' width='24' height='40' fill='none' stroke='%23141111' stroke-width='9'/%3E%3Crect x='118' y='100' width='24' height='40' fill='none' stroke='%23141111' stroke-width='9'/%3E%3C/svg%3E",
       "sizes": "192x192",
       "type": "image/svg+xml"
     }
