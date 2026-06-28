@@ -13,7 +13,7 @@
   │  GET  /api/result/{job_id}    → 完成后取结果
   ▼
 FastAPI (main.py) → settings.resolve(req) → pipeline/orchestrator.py 串联 5 阶段：
-  1. ingest    文章=trafilatura / YouTube=字幕 / Apple Podcasts+RSS=解析音频 / 音频=whisper STT
+  1. ingest    文章=trafilatura / YouTube=字幕 / Apple Podcasts+RSS+小宇宙=解析音频 / 音频=whisper STT
   2. extract   LLM map-reduce → 排序后的核心重点
   3. research  网络检索补充 top 重点（并发）
   4. script    LLM 按字数预算写定长口语脚本（真人口吻 anti-vibe；单人/对谈）

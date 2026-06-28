@@ -164,7 +164,11 @@
   <!-- ===== 1. INPUT ===== -->
   <section id="screen-input">
     <label class="label" data-i18n="url_label"></label>
-    <input id="url" type="url" inputmode="url" placeholder="https://…" class="input" />
+    <div class="flex gap-2">
+      <input id="url" type="url" inputmode="url" placeholder="https://…" class="input" />
+      <button id="check_url" type="button" class="btn px-3 py-2 shrink-0" data-i18n="check_btn"></button>
+    </div>
+    <p id="url_res" class="font-mono text-xs mt-2"></p>
 
     <label class="label mt-6" data-i18n="duration_label"></label>
     <div id="minutes" class="grid grid-cols-4 gap-2">
@@ -297,7 +301,9 @@
       tts_model_label: "TTS Model",
       tts_voice_label: "TTS Voice",
       tts_note: "Built-in edge-tts needs no key (online, multi-language incl. Chinese). Or point to any OpenAI-compatible /v1/audio/speech endpoint. Blank fields fall back to the server .env.",
-      url_label: "Link (article / YouTube)",
+      url_label: "Link (article / YouTube / Apple Podcasts / RSS / 小宇宙)",
+      check_btn: "Check",
+      kind: { youtube:"YouTube", podcast:"Podcast", audio:"Audio file", article:"Article" },
       duration_label: "Target length",
       unit: "min",
       advanced: "Advanced ▾",
@@ -354,7 +360,9 @@
       tts_model_label: "TTS Model",
       tts_voice_label: "TTS 音色",
       tts_note: "自带 edge-tts 无需 key（在线，多语言含中文）。或指向任意 OpenAI 兼容的 /v1/audio/speech 端点。留空则用服务器 .env 默认值。",
-      url_label: "链接（文章 / YouTube）",
+      url_label: "链接（文章 / YouTube / Apple Podcasts / RSS / 小宇宙）",
+      check_btn: "检测",
+      kind: { youtube:"YouTube", podcast:"播客", audio:"音频", article:"文章" },
       duration_label: "目标时长",
       unit: "分",
       advanced: "高级选项 ▾",
@@ -523,6 +531,19 @@
         ${st.detail?`<div class="font-mono text-[11px] text-mute mt-0.5">${st.detail}</div>`:''}</div></li>`;
     }).join('');
   }
+
+  $('check_url').onclick = async (e) => {
+    const url = $('url').value.trim(), res = $('url_res');
+    if (!/^https?:\/\//.test(url)){ res.style.color='#fe7da8'; res.textContent='✕ '+L.err_url; return; }
+    const btn = e.currentTarget, old = btn.textContent;
+    btn.disabled = true; btn.textContent = L.testing; res.style.color='#576574'; res.textContent = L.testing;
+    try {
+      const r = await fetch('/api/check_url', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url})}).then(r=>r.json());
+      if (r.ok){ res.style.color='#15803d'; res.textContent = `✓ ${(L.kind && L.kind[r.kind]) || r.kind}${r.title ? ' · '+r.title : ''}`; }
+      else { res.style.color='#fe7da8'; res.textContent = `✕ ${L.test_fail}${r.detail ? ' · '+r.detail : ''}`; }
+    } catch(err){ res.style.color='#fe7da8'; res.textContent = `✕ ${L.test_fail} · ${err}`; }
+    finally { btn.disabled = false; btn.textContent = old; }
+  };
 
   $('go').onclick = async () => {
     const url = $('url').value.trim();

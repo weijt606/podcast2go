@@ -35,6 +35,10 @@ async def ingest(s: Settings, url: str) -> dict:
         audio_url, title = await asyncio.to_thread(_apple_audio, url)
         return await _audio(s, audio_url, title=title, source_url=url, source_type="podcast")
 
+    if "xiaoyuzhoufm.com" in host:
+        audio_url, title = await asyncio.to_thread(_xyz_audio, url)
+        return await _audio(s, audio_url, title=title, source_url=url, source_type="podcast")
+
     if url.split("?")[0].lower().endswith(_AUDIO_EXT):
         return await _audio(s, url)
 
@@ -44,6 +48,27 @@ async def ingest(s: Settings, url: str) -> dict:
 
     res = await extract_article(s, url)
     return {"title": res["title"], "text": res["text"], "source_type": "article", "source_url": url}
+
+
+async def probe(url: str) -> dict:
+    """Classify a URL (and resolve podcast audio) WITHOUT transcribing — for a
+    quick 'can this link be ingested?' check. Returns {kind, title, audio_url?}."""
+    vid = _yt_id(url)
+    if vid:
+        return {"kind": "youtube", "title": await asyncio.to_thread(_yt_title, url)}
+    host = urllib.parse.urlparse(url).netloc.lower()
+    if "podcasts.apple.com" in host or "podcast.apple.com" in host:
+        au, ti = await asyncio.to_thread(_apple_audio, url)
+        return {"kind": "podcast", "title": ti, "audio_url": au}
+    if "xiaoyuzhoufm.com" in host:
+        au, ti = await asyncio.to_thread(_xyz_audio, url)
+        return {"kind": "podcast", "title": ti, "audio_url": au}
+    if url.split("?")[0].lower().endswith(_AUDIO_EXT):
+        return {"kind": "audio", "title": None, "audio_url": url}
+    if url.split("?")[0].lower().endswith(_FEED_EXT):
+        au, ti = await asyncio.to_thread(_rss_resolve, url)
+        return {"kind": "podcast", "title": ti, "audio_url": au}
+    return {"kind": "article", "title": None}
 
 
 def _youtube(vid: str, url: str) -> dict:
@@ -114,6 +139,19 @@ def _apple_audio(url: str) -> tuple[str, str | None]:
             return _rss_resolve(feed)
 
     raise RuntimeError("无法从该 Apple Podcasts 链接解析出音频（可能是地区限制或单集已下架）")
+
+
+def _xyz_audio(url: str) -> tuple[str, str | None]:
+    """Resolve a 小宇宙 (xiaoyuzhoufm.com) episode page to its audio + title."""
+    html = _get(url, timeout=15).decode("utf-8", "ignore")
+    m = re.search(r'<meta[^>]+property=["\']og:audio["\'][^>]+content=["\']([^"\']+)["\']', html, re.I) \
+        or re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:audio["\']', html, re.I) \
+        or re.search(r'(https://media\.xyzcdn\.net/[^"\'\s]+?\.(?:m4a|mp3))', html)
+    if not m:
+        raise RuntimeError("无法从小宇宙页面解析出音频")
+    audio = m.group(1).replace("&amp;", "&")
+    tm = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']', html, re.I)
+    return audio, (tm.group(1).strip() if tm else None)
 
 
 def _rss_resolve(url: str) -> tuple[str, str | None]:

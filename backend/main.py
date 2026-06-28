@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 import settings
 from pipeline import llm
+from pipeline.ingest import probe
 from pipeline.orchestrator import run_pipeline
 from providers.tts import synthesize
 from state import JOBS, STEPS, new_job
@@ -45,6 +46,19 @@ async def generate(req: GenReq):
     job = new_job()
     asyncio.create_task(run_pipeline(job, req.model_dump()))
     return {"job_id": job.id, "steps": STEPS}
+
+
+class CheckReq(BaseModel):
+    url: str
+
+
+@app.post("/api/check_url")
+async def check_url(req: CheckReq):
+    """Classify a link (and resolve podcast audio) without transcribing."""
+    try:
+        return {"ok": True, **(await probe(req.url))}
+    except Exception as e:
+        return {"ok": False, "detail": str(e)[:200]}
 
 
 class LLMTestReq(BaseModel):

@@ -23,7 +23,7 @@
 链接 ─▶ 解析 ─▶ 提取重点 ─▶ 网络检索 ─▶ 定长脚本 ─▶ 语音合成 ─▶ 🎧
 ```
 
-1. **解析来源** — 文章（trafilatura）、YouTube（字幕）、**Apple Podcasts / RSS 订阅源**、或音频直链（Whisper STT）
+1. **解析来源** — 文章（trafilatura）、YouTube（字幕）、**Apple Podcasts / RSS / 小宇宙**、或音频直链（Whisper STT）
 2. **提取重点** — LLM 把长文本提炼成排序后的核心点
 3. **网络检索** — 对最重要的点做网络搜索，补上背景与出处
 4. **撰写脚本** — 按 `目标分钟 × 语速` 的字数预算生成定长口语脚本，用真人口吻撰写（anti-vibe-writing 规则），可选单人独白或双人对谈
@@ -35,13 +35,22 @@
 - 🎙️ **两种形态**：单人讲解 或 **双人对谈**（两位说话人各用一个音色）
 - 🗣️ **音色选择 + 试听** — 按语言提供 curated 自然音色，或接自定义 TTS API
 - 🧑 **真人化文稿** — anti-vibe-writing 规则去掉 AI 写作味（中英）
-- 📻 **播客 / 音频解析** — Apple Podcasts 链接、RSS 订阅源、YouTube、文章、音频文件
+- 📻 **播客 / 音频解析** — Apple Podcasts、RSS 订阅源、小宇宙、YouTube、文章、音频文件（带一键**链接检测**）
 - 🎛️ **可引导**：核心点、深度了解的点、语气/视角、输出语言
 - 🌍 **多语言**音频（含中文），由 edge-tts 提供
 - 🔌 **连通性测试**按钮（LLM 与 TTS 端点）
 - 📱 移动端 PWA，**后台播放**（Media Session API）
 - 🌐 **中英双语界面**一键切换
 - 🔑 **BYOK** — 在界面或 `.env` 里自带 LLM / TTS 端点与 key
+
+## 截图
+
+<p>
+  <img src="./docs/screenshot-home.png" width="300" alt="podcast2go 首页：贴链接、选时长" />
+  <img src="./docs/screenshot-advanced.png" width="300" alt="高级与设置：LLM/TTS 测试按钮、TTS 引擎选择、模式、音色选择 + 试听" />
+</p>
+
+首页（贴链接、选时长）· 高级与设置（LLM/TTS 测试按钮、TTS 引擎选择、单人/对谈模式、音色选择 + **▶ 试听**）。
 
 ## 引擎（均可替换）
 
@@ -115,7 +124,7 @@ LLM_BASE_URL=http://localhost:11434/v1            LLM_API_KEY=ollama  LLM_MODEL=
 Base URL / key / model，它们会随每次请求发送并优先生效，所以**完全不建 `.env` 也能跑**。界面留空的字段
 才回退到 `.env`。想要一个持久默认值、不必每个浏览器重填时，再用 `.env`。
 
-要解析 Apple Podcasts / RSS 订阅源 / 音频直链（用 Whisper STT 转写），再 `pip install faster-whisper`。
+要解析 Apple Podcasts / RSS / 小宇宙 / 音频直链（用 Whisper STT 转写），再 `pip install faster-whisper`。
 （不支持 Spotify——它不开放单集音频。）
 
 ## 新手指引

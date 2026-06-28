@@ -28,7 +28,7 @@ endpoint (and that can be a local one).
 link ─▶ ingest ─▶ extract key points ─▶ web research ─▶ time-boxed script ─▶ TTS ─▶ 🎧
 ```
 
-1. **Ingest** — articles (trafilatura), YouTube (captions), **Apple Podcasts / RSS feeds**, or audio URLs (Whisper STT)
+1. **Ingest** — articles (trafilatura), YouTube (captions), **Apple Podcasts / RSS / 小宇宙**, or audio URLs (Whisper STT)
 2. **Extract** — an LLM distills the long text into ranked key points
 3. **Research** — the top points are searched on the web for background and sources
 4. **Script** — a length-budgeted spoken script (`target minutes × words-per-minute`), written in a natural human voice (anti-vibe-writing rules), as a monologue or a two-host dialogue
@@ -40,13 +40,23 @@ link ─▶ ingest ─▶ extract key points ─▶ web research ─▶ time-box
 - 🎙️ **Two formats**: single-host narration or **two-host dialogue** (each speaker its own voice)
 - 🗣️ **Voice picker with preview** — curated edge-tts voices per language, or a custom TTS API
 - 🧑 **Human-sounding scripts** — anti-vibe-writing rules strip the AI-writing flavor (EN / 中文)
-- 📻 **Podcast & audio ingestion** — Apple Podcasts links, RSS feeds, YouTube, articles, audio files
+- 📻 **Podcast & audio ingestion** — Apple Podcasts, RSS feeds, 小宇宙, YouTube, articles, audio files (with a one-tap **link check**)
 - 🎛️ **Steerable**: focus topics, deep-dive topics, tone/angle, output language
 - 🌍 **Multi-language** audio (incl. Chinese) via edge-tts
 - 🔌 **Connectivity test** buttons for the LLM and TTS endpoints
 - 📱 Mobile PWA with **background playback** (Media Session API)
 - 🌐 **Bilingual UI** (English / 简体中文) toggle
 - 🔑 **BYOK** — bring your own LLM / TTS endpoint & key from the UI or `.env`
+
+## Screenshots
+
+<p>
+  <img src="./docs/screenshot-home.png" width="300" alt="podcast2go home: paste a link, pick a length" />
+  <img src="./docs/screenshot-advanced.png" width="300" alt="advanced & settings: LLM/TTS test buttons, TTS engine choice, mode, voice picker with preview" />
+</p>
+
+Home (paste a link, pick a length) · advanced & settings (LLM/TTS test buttons, TTS engine choice,
+single/dialogue mode, voice picker with **▶ Preview**).
 
 ## Engines (all swappable)
 
@@ -126,7 +136,7 @@ If you fill the Base URL / key / model in the app's BYOK settings panel, they're
 request and take precedence, so you can run with **no `.env` at all**. Blank UI fields fall back to
 `.env`. Use `.env` when you want a persistent default instead of re-typing it in each browser.
 
-To ingest Apple Podcasts / RSS feeds / audio URLs (which are transcribed with Whisper STT), also
+To ingest Apple Podcasts / RSS / 小宇宙 / audio URLs (which are transcribed with Whisper STT), also
 `pip install faster-whisper`. (Spotify isn't supported — it exposes no open episode audio.)
 
 ## First-time guide
