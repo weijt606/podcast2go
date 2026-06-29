@@ -167,9 +167,9 @@ address in your browser.
 
 **3 · Make your first digest.**
 
-1. Paste a **link** — an article URL or a YouTube link.
+1. Paste a **link** — article, YouTube, Apple Podcasts, an RSS feed, or 小宇宙 (tap **Check** to confirm it resolves).
 2. Pick a **target length** (3 / 5 / 10 / 15 min).
-3. *(optional)* Open **Advanced** for focus topics, tone/angle, or output language.
+3. *(optional)* Open **Advanced** for focus / deep-dive topics, tone, output language, single-host or two-host **mode**, and the **voice** (with **▶ Preview**).
 4. Hit **Generate podcast** and watch the five steps run (parse → extract → research → script → voice).
 5. When the player appears, press play — jump by chapter, skim the key points & sources, read the
    full script, or **Download** the mp3 to keep. Lock your phone and it keeps playing (background playback).
@@ -178,7 +178,7 @@ address in your browser.
 Base URL / key / model for this browser only — handy on a phone. Blank fields fall back to
 `backend/.env`.
 
-> Want to digest an audio/podcast link (not just articles/YouTube)? Run `pip install faster-whisper` once.
+> Want to digest a podcast/audio link (Apple Podcasts, RSS, 小宇宙, audio files)? Run `pip install faster-whisper` once.
 
 ## Notes
 
