@@ -13,11 +13,12 @@ from pipeline import llm
 from pipeline.ingest import probe
 from pipeline.orchestrator import run_pipeline
 from providers.tts import synthesize
-from state import JOBS, STEPS, new_job
+from state import JOBS, STEPS, new_job, sweep
 
 app = FastAPI(title="podcast2go")
 
-os.makedirs("static/audio", exist_ok=True)
+AUDIO_DIR = "static/audio"
+os.makedirs(AUDIO_DIR, exist_ok=True)
 
 
 class GenReq(BaseModel):
@@ -43,6 +44,7 @@ class GenReq(BaseModel):
 
 @app.post("/api/generate")
 async def generate(req: GenReq):
+    sweep(AUDIO_DIR)   # drop long-finished jobs and their mp3s before starting a new one
     job = new_job()
     asyncio.create_task(run_pipeline(job, req.model_dump()))
     return {"job_id": job.id, "steps": STEPS}
