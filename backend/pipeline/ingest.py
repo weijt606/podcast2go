@@ -25,7 +25,7 @@ def _yt_id(url: str):
     return m.group(1) if m else None
 
 
-async def ingest(s: Settings, url: str) -> dict:
+async def ingest(s: Settings, url: str, on_progress=None) -> dict:
     vid = _yt_id(url)
     if vid:
         return await asyncio.to_thread(_youtube, vid, url)
@@ -33,18 +33,21 @@ async def ingest(s: Settings, url: str) -> dict:
     host = urllib.parse.urlparse(url).netloc.lower()
     if "podcasts.apple.com" in host or "podcast.apple.com" in host:
         audio_url, title = await asyncio.to_thread(_apple_audio, url)
-        return await _audio(s, audio_url, title=title, source_url=url, source_type="podcast")
+        return await _audio(s, audio_url, title=title, source_url=url, source_type="podcast",
+                            on_progress=on_progress)
 
     if "xiaoyuzhoufm.com" in host:
         audio_url, title = await asyncio.to_thread(_xyz_audio, url)
-        return await _audio(s, audio_url, title=title, source_url=url, source_type="podcast")
+        return await _audio(s, audio_url, title=title, source_url=url, source_type="podcast",
+                            on_progress=on_progress)
 
     if url.split("?")[0].lower().endswith(_AUDIO_EXT):
-        return await _audio(s, url)
+        return await _audio(s, url, on_progress=on_progress)
 
     if url.split("?")[0].lower().endswith(_FEED_EXT):
         audio_url, title = await asyncio.to_thread(_rss_resolve, url)
-        return await _audio(s, audio_url, title=title, source_url=url, source_type="podcast")
+        return await _audio(s, audio_url, title=title, source_url=url, source_type="podcast",
+                            on_progress=on_progress)
 
     res = await extract_article(s, url)
     return {"title": res["title"], "text": res["text"], "source_type": "article", "source_url": url}
@@ -172,10 +175,11 @@ def _rss_resolve(url: str) -> tuple[str, str | None]:
 
 
 async def _audio(s: Settings, url: str, title: str | None = None,
-                 source_url: str | None = None, source_type: str = "audio") -> dict:
+                 source_url: str | None = None, source_type: str = "audio",
+                 on_progress=None) -> dict:
     from providers.stt import transcribe
 
-    text = await transcribe(s, url)
+    text = await transcribe(s, url, on_progress)
     fallback = urllib.parse.unquote(url.split("?")[0].rstrip("/").split("/")[-1]) or "Audio"
     return {
         "title": title or fallback,

@@ -8,3 +8,4 @@ backend/static/audio/*.wav
 backend/static/audio/*.mp3
 .DS_Store
 node_modules/
+demo-script.md
