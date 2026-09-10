@@ -1,0 +1,80 @@
+name: CI
+
+# Runs on every pull request into main, which is the only way changes reach main.
+# Both jobs are required checks, so a pull request cannot be merged until they pass,
+# no matter who opened it or who merges it.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# A pull request from a fork gets a read-only token and no secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Run the deterministic suite
+        working-directory: backend
+        env:
+          # The live-engine checks reach DuckDuckGo, Wikipedia and Microsoft's TTS.
+          # They belong on a developer's machine, not in a gate that blocks merges.
+          P2G_SKIP_LIVE: "1"
+        run: python test_smoke.py
+
+      - name: Byte-compile every module
+        working-directory: backend
+        run: python -m compileall -q main.py settings.py state.py config.py pipeline providers
+
+  guard:
+    name: credential guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No .env in the tree
+        run: |
+          if git ls-files | grep -qE '(^|/)\.env$'; then
+            echo "A .env file is tracked. Keys belong in an untracked .env only."
+            git ls-files | grep -E '(^|/)\.env$'
+            exit 1
+          fi
+
+      - name: No credentials committed
+        run: |
+          pattern='sk-[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+          if git grep -nIE "$pattern" -- .; then
+            echo "Something matching an API key or private key is committed."
+            exit 1
+          fi
+
+      - name: No audio artifacts committed
+        run: |
+          if git ls-files | grep -qE '\.(mp3|wav|m4a)$'; then
+            echo "Generated audio is committed. backend/static/audio/ is gitignored for a reason."
+            git ls-files | grep -E '\.(mp3|wav|m4a)$'
+            exit 1
+          fi

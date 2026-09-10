@@ -183,7 +183,14 @@ async def live():
         print("SKIP  youtube ingest (network/blocked):", type(e).__name__, str(e)[:80])
 
 
-asyncio.run(live())
+# CI has no reliable route to DuckDuckGo, Wikipedia or Microsoft's TTS service, and a
+# flaky required check blocks every merge. The deterministic half is the gate; the live
+# half stays available locally, where it is the part that actually catches regressions
+# in the engines themselves.
+if os.getenv("P2G_SKIP_LIVE") == "1":
+    print("SKIP  live engine checks (P2G_SKIP_LIVE=1)")
+else:
+    asyncio.run(live())
 
 print(f"\n=== {len(PASS)} passed, {len(FAIL)} failed ===")
 if FAIL:
